@@ -1,0 +1,12 @@
+live playtest landing-visual-defects
+LOAD http://127.0.0.1:8765/app.html?fresh=1 viewport=1280x800
+SCREENSHOT 01_initial_1280.png — banner visible, clipped card titles, horizontal scroll
+UX_PROBE scripts/ux_probe.js — 14 findings, 6 blockers
+CLICK #start-btn "Start free"
+OBSERVE status text "Trial started."
+SCREENSHOT 03_after_trial_started.png
+CLICK #dismiss — banner removed from DOM
+OBSERVE snapshot no longer lists Dismiss button
+CLICK #contact "Contact sales"
+OBSERVE status text "Sales contacted."
+FREEZE report.json checks + ux_findings

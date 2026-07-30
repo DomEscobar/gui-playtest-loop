@@ -1,0 +1,203 @@
+{
+  "goal_id": "landing-visual-defects",
+  "round": 1,
+  "playtester_run_id": "live-20260730T123730Z",
+  "checks": [
+    {
+      "id": "cta-starts-trial",
+      "status": "pass",
+      "evidence": [
+        "screenshots/03_after_trial_started.png"
+      ],
+      "action_log_lines": [
+        4,
+        5
+      ]
+    },
+    {
+      "id": "banner-dismisses",
+      "status": "pass",
+      "evidence": [
+        "screenshots/01_initial_1280.png"
+      ],
+      "action_log_lines": [
+        6,
+        7
+      ]
+    },
+    {
+      "id": "contact-responds",
+      "status": "pass",
+      "evidence": [
+        "screenshots/03_after_trial_started.png"
+      ],
+      "action_log_lines": [
+        8,
+        9
+      ]
+    }
+  ],
+  "ux_findings": [
+    {
+      "id": "ux-1",
+      "layer": "measured",
+      "rule": "viewport-overflow",
+      "severity": "blocker",
+      "viewport": 1280,
+      "observation": "Document scrollWidth exceeds innerWidth by 312px at 1280px viewport.",
+      "user_impact": "The page scrolls sideways; content on the right is hidden off-screen.",
+      "evidence": [
+        "screenshots/01_initial_1280.png"
+      ],
+      "measurement": {
+        "metric": "horizontal_overflow",
+        "actual": 312,
+        "threshold": 0,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "ux-2",
+      "layer": "measured",
+      "rule": "low-legibility",
+      "severity": "blocker",
+      "selector": "p.subtitle",
+      "viewport": 1280,
+      "observation": "Hero subtitle contrast ratio is 1.54:1 against white.",
+      "user_impact": "The tagline is effectively invisible.",
+      "evidence": [
+        "screenshots/01_initial_1280.png"
+      ],
+      "measurement": {
+        "metric": "contrast_ratio",
+        "actual": 1.54,
+        "threshold": 4.5,
+        "unit": "ratio",
+        "approximated": false
+      }
+    },
+    {
+      "id": "ux-3",
+      "layer": "measured",
+      "rule": "text-clipped",
+      "severity": "blocker",
+      "selector": "p.card-title",
+      "viewport": 1280,
+      "observation": "All three feature card titles are clipped by overflow:hidden with no ellipsis.",
+      "user_impact": "Feature names read as 'Continuous depl', 'Observability inc', etc.",
+      "evidence": [
+        "screenshots/01_initial_1280.png"
+      ],
+      "measurement": {
+        "metric": "overflow_x",
+        "actual": 125,
+        "threshold": 0,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "ux-4",
+      "layer": "measured",
+      "rule": "target-too-small",
+      "severity": "blocker",
+      "selector": "#dismiss",
+      "viewport": 1280,
+      "observation": "Banner dismiss control measures 14x14px.",
+      "user_impact": "The dismiss button is hard to tap accurately.",
+      "evidence": [
+        "screenshots/01_initial_1280.png"
+      ],
+      "measurement": {
+        "metric": "min_side",
+        "actual": 14,
+        "threshold": 24,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "ux-5",
+      "layer": "measured",
+      "rule": "image-aspect-distortion",
+      "severity": "major",
+      "selector": "#logo",
+      "viewport": 1280,
+      "observation": "Logo renders at 240x80 from a 100x100 source (200% aspect drift).",
+      "user_impact": "The logo appears horizontally stretched.",
+      "evidence": [
+        "screenshots/01_initial_1280.png"
+      ],
+      "measurement": {
+        "metric": "aspect_drift",
+        "actual": 200,
+        "threshold": 2,
+        "unit": "percent"
+      }
+    },
+    {
+      "id": "ux-6",
+      "layer": "measured",
+      "rule": "tiny-text",
+      "severity": "major",
+      "selector": "p.legal",
+      "viewport": 1280,
+      "observation": "Legal disclaimer renders at 9px.",
+      "user_impact": "Footer text is uncomfortable to read.",
+      "evidence": [
+        "screenshots/01_initial_1280.png"
+      ],
+      "measurement": {
+        "metric": "font_size",
+        "actual": 9,
+        "threshold": 12,
+        "unit": "px"
+      }
+    },
+    {
+      "id": "ux-7",
+      "layer": "measured",
+      "rule": "unstyled-default",
+      "severity": "major",
+      "viewport": 1280,
+      "observation": "Contact sales button uses user-agent default chrome (border-style: outset).",
+      "user_impact": "One control looks unfinished next to the styled primary CTA.",
+      "evidence": [
+        "screenshots/01_initial_1280.png"
+      ],
+      "measurement": {
+        "metric": "default_signals",
+        "actual": 1,
+        "threshold": 0,
+        "unit": "count"
+      }
+    },
+    {
+      "id": "ux-8",
+      "layer": "judged",
+      "heuristic": "hierarchy-competing-emphasis",
+      "severity": "major",
+      "viewport": 1280,
+      "observation": "The solid blue logo block is the largest saturated area above the fold.",
+      "user_impact": "Attention lands on a placeholder graphic instead of the headline or CTA.",
+      "rationale": "The logo placeholder occupies more visual weight than the value proposition text.",
+      "confidence": "high",
+      "evidence": [
+        "screenshots/01_initial_1280.png"
+      ]
+    },
+    {
+      "id": "ux-9",
+      "layer": "judged",
+      "heuristic": "feedback-missing",
+      "severity": "major",
+      "viewport": 1280,
+      "observation": "Trial started and Sales contacted appear as plain unstyled text appended below the footer.",
+      "user_impact": "Users may not notice that their action succeeded.",
+      "rationale": "Success feedback uses the same visual treatment as the legal disclaimer, with no emphasis or placement near the clicked control.",
+      "confidence": "high",
+      "evidence": [
+        "screenshots/03_after_trial_started.png"
+      ]
+    }
+  ],
+  "instrumented_findings": []
+}

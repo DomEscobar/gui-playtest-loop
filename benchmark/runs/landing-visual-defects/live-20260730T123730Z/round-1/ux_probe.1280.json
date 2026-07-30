@@ -1,0 +1,32 @@
+{
+  "probe_version": "1.0.0",
+  "url": "http://127.0.0.1:8765/app.html?fresh=1",
+  "title": "Nimbus \u2014 Ship faster",
+  "generated_at": "2026-07-30T12:37:27.125Z",
+  "viewport": {
+    "width": 1280,
+    "height": 800,
+    "device_pixel_ratio": 1
+  },
+  "summary": {
+    "total": 14,
+    "reported": 14,
+    "by_rule": {
+      "tiny-text": 2,
+      "low-legibility": 2,
+      "image-aspect-distortion": 1,
+      "text-clipped": 3,
+      "element-overflows-viewport": 1,
+      "target-too-small": 2,
+      "missing-hover-affordance": 1,
+      "viewport-overflow": 1,
+      "unstyled-default": 1
+    },
+    "by_severity": {
+      "blocker": 6,
+      "major": 6,
+      "minor": 2
+    }
+  },
+  "notes": []
+}
