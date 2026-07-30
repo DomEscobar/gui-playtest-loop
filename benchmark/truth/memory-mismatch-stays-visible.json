@@ -1,0 +1,10 @@
+{
+  "fixture_id": "memory-mismatch-stays-visible",
+  "base_app": "memory-game",
+  "archetype": "state-never-returns",
+  "class": "injected",
+  "split": "train",
+  "must_fail": ["mismatch-flips-back"],
+  "must_pass": ["start-begins-game"],
+  "mutation": "Mismatch handler clears lock but never hides wrong pair cards."
+}

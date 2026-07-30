@@ -1,0 +1,10 @@
+{
+  "fixture_id": "memory-clean-control",
+  "base_app": "memory-game",
+  "archetype": "clean-control",
+  "class": "control",
+  "split": "train",
+  "must_fail": [],
+  "must_pass": ["initial-state-hidden", "start-begins-game", "card-flips-on-click", "mismatch-flips-back"],
+  "mutation": "None — fully working reference implementation."
+}

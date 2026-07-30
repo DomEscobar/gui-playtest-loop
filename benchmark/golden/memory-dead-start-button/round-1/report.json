@@ -1,0 +1,77 @@
+{
+  "goal_id": "memory-dead-start-button",
+  "round": 1,
+  "playtester_run_id": "golden-memory-dead-start-button",
+  "checks": [
+    {
+      "id": "initial-state-hidden",
+      "status": "pass",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        1
+      ]
+    },
+    {
+      "id": "start-begins-game",
+      "status": "fail",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        2,
+        3
+      ],
+      "repro": [
+        "Reproduce failure for start-begins-game"
+      ],
+      "user_facing_bug": "Clicking Start does nothing; the game never begins."
+    },
+    {
+      "id": "card-flips-on-click",
+      "status": "fail",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        2,
+        3
+      ],
+      "repro": [
+        "Reproduce failure for card-flips-on-click"
+      ],
+      "user_facing_bug": "Cards stay face down because Start never begins the game."
+    },
+    {
+      "id": "mismatch-flips-back",
+      "status": "fail",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        2,
+        3
+      ],
+      "repro": [
+        "Reproduce failure for mismatch-flips-back"
+      ],
+      "user_facing_bug": "Mismatch behavior cannot be tested because the game never starts."
+    },
+    {
+      "id": "restart-resets",
+      "status": "blocked",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        1
+      ],
+      "repro": [
+        "Restart is disabled before the game starts."
+      ],
+      "user_facing_bug": "Restart is disabled before the game starts."
+    }
+  ],
+  "instrumented_findings": []
+}

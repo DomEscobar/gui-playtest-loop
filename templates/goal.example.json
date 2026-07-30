@@ -1,0 +1,60 @@
+{
+  "goal_id": "memory-game-playable",
+  "source_prompt": "the memory game should be fully playable",
+  "app": {
+    "start_command": "bun run dev",
+    "url": "http://localhost:5173"
+  },
+  "checks": [
+    {
+      "id": "initial-state-hidden",
+      "statement": "Before clicking Start, all cards are face down and no score is shown.",
+      "required": true
+    },
+    {
+      "id": "start-begins-game",
+      "statement": "Clicking Start begins the game and makes the board interactive.",
+      "required": true
+    },
+    {
+      "id": "card-flips-on-click",
+      "statement": "Clicking a face-down card flips it face up.",
+      "required": true
+    },
+    {
+      "id": "match-stays-visible",
+      "statement": "A matching pair of cards stays face up after being matched.",
+      "required": true
+    },
+    {
+      "id": "mismatch-flips-back",
+      "statement": "A non-matching pair flips back face down within roughly 1.5s.",
+      "required": true
+    },
+    {
+      "id": "score-increments-on-match",
+      "statement": "The score increases by exactly one point per matched pair, not per click.",
+      "required": true
+    },
+    {
+      "id": "double-click-guard",
+      "statement": "Rapidly double-clicking the same card does not count it as its own match or duplicate the flip animation.",
+      "required": true
+    },
+    {
+      "id": "game-over-state-appears",
+      "statement": "Once all pairs are matched, a clear game-over or win state appears.",
+      "required": true
+    },
+    {
+      "id": "restart-resets-everything",
+      "statement": "Restart resets the board, the score, and any in-progress card selection.",
+      "required": true
+    },
+    {
+      "id": "reload-mid-game",
+      "statement": "Reloading the page mid-game does not leave the UI in a broken or half-rendered state.",
+      "required": false
+    }
+  ]
+}

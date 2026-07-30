@@ -1,0 +1,8 @@
+1 navigate http://127.0.0.1:8765/app.html
+2 observe all 16 cards face down (hidden class), status reads "Click Start to begin."
+3 screenshot 01_initial_hidden_cards.png
+4 click Start button
+5 observe status still "Click Start to begin." and Start button still enabled — game did not begin
+6 screenshot 02_start_no_effect.png
+7 click first card
+8 observe card remains face down; no flip occurred because game never started

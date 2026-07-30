@@ -1,0 +1,9 @@
+{
+  "goal_id": "memory-mismatch-stays-visible",
+  "source_prompt": "memory game: wrong pairs should flip back",
+  "app": { "start_command": "python benchmark/harness/serve.py --fixture memory-mismatch-stays-visible", "url": "http://127.0.0.1:8765/app.html" },
+  "checks": [
+    { "id": "start-begins-game", "statement": "Start begins the game.", "required": true },
+    { "id": "mismatch-flips-back", "statement": "Non-matching pair flips back within roughly 1.5s.", "required": true }
+  ]
+}

@@ -1,0 +1,5 @@
+1 navigate http://localhost:3001
+2 observe page title "media4agents — your agent writes the URL" and hero section render without a blank screen
+3 screenshot 01_landing_loaded.png captured as evidence for landing-loads
+4 scroll to "Agent instruction preview" section containing the /m/ URL example
+5 screenshot 02_media_url_example.png captured as evidence for media-url-example-visible

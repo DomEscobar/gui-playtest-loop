@@ -1,0 +1,9 @@
+{
+  "goal_id": "trap-overlay-blocks-clicks",
+  "source_prompt": "memory game cards should flip when clicked after start",
+  "app": { "start_command": "python benchmark/harness/serve.py --fixture trap-overlay-blocks-clicks", "url": "http://127.0.0.1:8765/app.html" },
+  "checks": [
+    { "id": "start-begins-game", "statement": "Start changes status to indicate game began.", "required": true },
+    { "id": "card-flips-on-click", "statement": "After Start, clicking a card flips it visible.", "required": true }
+  ]
+}

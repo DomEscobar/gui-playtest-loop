@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Item Dashboard</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 520px; margin: 2rem auto; }
+    .item { padding: 0.5rem; border-bottom: 1px solid #ddd; }
+    .item[data-category="fruit"] { background: #fef3c7; }
+    .item[data-category="veg"] { background: #dcfce7; }
+  </style>
+</head>
+<body>
+  <h1>Items</h1>
+  <label>Filter:
+    <select id="filter">
+      <option value="all">All</option>
+      <option value="fruit">Fruit only</option>
+      <option value="veg">Vegetables only</option>
+    </select>
+  </label>
+  <div id="list">
+    <div class="item" data-category="fruit">Apple</div>
+    <div class="item" data-category="fruit">Banana</div>
+    <div class="item" data-category="veg">Carrot</div>
+    <div class="item" data-category="veg">Broccoli</div>
+  </div>
+  <script>
+    const filterEl = document.getElementById('filter');
+    const items = [...document.querySelectorAll('.item')];
+    filterEl.addEventListener('change', () => {
+      // MUTATION: filter UI changes but list never updates — fake dynamism
+      filterEl.style.borderColor = '#6366f1';
+    });
+  </script>
+</body>
+</html>

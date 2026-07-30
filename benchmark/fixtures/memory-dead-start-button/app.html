@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Game</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 520px; margin: 2rem auto; padding: 0 1rem; }
+    #board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 1rem; }
+    .card { aspect-ratio: 1; border: 2px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; background: #1a1a2e; color: #eee; user-select: none; }
+    .card.hidden { background: #16213e; color: transparent; }
+    .card.matched { opacity: 0.5; pointer-events: none; }
+    #score { margin-top: 1rem; font-weight: bold; }
+    #status { margin-top: 0.5rem; color: #666; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <h1>Memory Game</h1>
+  <button id="start-btn" type="button">Start</button>
+  <button id="restart-btn" type="button" disabled>Restart</button>
+  <div id="score">Score: 0</div>
+  <div id="status">Click Start to begin.</div>
+  <div id="board"></div>
+
+  <script>
+    const EMOJIS = ['🍎', '🍌', '🍇', '🍊', '🍒', '🍋', '🍑', '🥝'];
+    let cards = [];
+    let flipped = [];
+    let score = 0;
+    let started = false;
+    let lock = false;
+
+    const boardEl = document.getElementById('board');
+    const scoreEl = document.getElementById('score');
+    const statusEl = document.getElementById('status');
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = '';
+      cards.forEach((emoji, idx) => {
+        const el = document.createElement('div');
+        el.className = 'card hidden';
+        el.dataset.index = idx;
+        el.textContent = emoji;
+        el.addEventListener('click', () => onCardClick(idx));
+        boardEl.appendChild(el);
+      });
+    }
+
+    function onCardClick(idx) {
+      if (!started || lock) return;
+      const el = boardEl.children[idx];
+      if (el.classList.contains('matched') || !el.classList.contains('hidden')) return;
+
+      el.classList.remove('hidden');
+      flipped.push(idx);
+
+      if (flipped.length === 2) {
+        lock = true;
+        const [a, b] = flipped;
+        if (cards[a] === cards[b]) {
+          boardEl.children[a].classList.add('matched');
+          boardEl.children[b].classList.add('matched');
+          score += 1;
+          scoreEl.textContent = 'Score: ' + score;
+          flipped = [];
+          lock = false;
+          if (score === EMOJIS.length) {
+            statusEl.textContent = 'You win!';
+            restartBtn.disabled = false;
+          }
+        } else {
+          setTimeout(() => {
+            boardEl.children[a].classList.add('hidden');
+            boardEl.children[b].classList.add('hidden');
+            flipped = [];
+            lock = false;
+          }, 900);
+        }
+      }
+    }
+
+    function resetGame() {
+      cards = shuffle([...EMOJIS, ...EMOJIS]);
+      flipped = [];
+      score = 0;
+      started = false;
+      lock = false;
+      scoreEl.textContent = 'Score: 0';
+      statusEl.textContent = 'Click Start to begin.';
+      restartBtn.disabled = true;
+      renderBoard();
+    }
+
+    restartBtn.addEventListener('click', resetGame);
+
+    // MUTATION: Start handler intentionally not wired — button renders but does nothing.
+    // startBtn.addEventListener('click', () => {
+    //   started = true;
+    //   statusEl.textContent = 'Find matching pairs!';
+    //   startBtn.disabled = true;
+    // });
+
+    resetGame();
+  </script>
+</body>
+</html>

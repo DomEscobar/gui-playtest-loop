@@ -1,0 +1,10 @@
+{
+  "fixture_id": "form-loses-data-on-validation",
+  "base_app": "signup-form",
+  "archetype": "data-loss-on-validation",
+  "class": "injected",
+  "split": "train",
+  "must_fail": ["data-retained-after-error"],
+  "must_pass": ["invalid-email-shows-error"],
+  "mutation": "Form clears email and name fields when validation fails."
+}

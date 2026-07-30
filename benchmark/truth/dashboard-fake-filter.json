@@ -1,0 +1,10 @@
+{
+  "fixture_id": "dashboard-fake-filter",
+  "base_app": "item-dashboard",
+  "archetype": "fake-dynamics",
+  "class": "injected",
+  "split": "held-out",
+  "must_fail": ["fruit-filter-hides-veg", "veg-filter-hides-fruit"],
+  "must_pass": ["all-items-visible-initially"],
+  "mutation": "Filter change only styles the select box; item list never updates."
+}

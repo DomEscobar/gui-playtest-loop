@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Playtest evidence with large screenshots (keep golden + schema)
+playtest-runs/**/screenshots/
+benchmark/runs/**/screenshots/
+benchmark/runs/**/autofix-*/
+
+# Timestamped benchmark results (reproducible via run_benchmark.py)
+benchmark/results/

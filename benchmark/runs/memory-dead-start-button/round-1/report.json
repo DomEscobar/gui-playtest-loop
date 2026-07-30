@@ -1,0 +1,56 @@
+{
+  "goal_id": "memory-dead-start-button",
+  "round": 1,
+  "playtester_run_id": "bench-spike-1",
+  "checks": [
+    {
+      "id": "initial-state-hidden",
+      "status": "pass",
+      "evidence": ["screenshots/01_initial_hidden_cards.png"],
+      "action_log_lines": [1, 2, 3]
+    },
+    {
+      "id": "start-begins-game",
+      "status": "fail",
+      "evidence": ["screenshots/02_start_no_effect.png"],
+      "action_log_lines": [4, 5, 6],
+      "repro": [
+        "Open http://127.0.0.1:8765/app.html",
+        "Click Start",
+        "Observe status still says 'Click Start to begin.' and cards are not interactive"
+      ],
+      "user_facing_bug": "Clicking Start does nothing; the game never begins and cards cannot be played."
+    },
+    {
+      "id": "card-flips-on-click",
+      "status": "fail",
+      "evidence": ["screenshots/02_start_no_effect.png"],
+      "action_log_lines": [7, 8],
+      "repro": [
+        "Open http://127.0.0.1:8765/app.html",
+        "Click Start (game does not begin)",
+        "Click any card — it stays face down"
+      ],
+      "user_facing_bug": "Cards do not flip on click because Start never begins the game."
+    },
+    {
+      "id": "mismatch-flips-back",
+      "status": "fail",
+      "evidence": ["screenshots/02_start_no_effect.png"],
+      "action_log_lines": [7, 8],
+      "repro": [
+        "Prerequisite: game must start first — it does not"
+      ],
+      "user_facing_bug": "Mismatch flip-back cannot occur because the game never starts."
+    },
+    {
+      "id": "restart-resets",
+      "status": "blocked",
+      "evidence": ["screenshots/01_initial_hidden_cards.png"],
+      "action_log_lines": [1],
+      "repro": ["Restart button is disabled before game starts"],
+      "user_facing_bug": "Restart is disabled; cannot verify reset behavior in this state."
+    }
+  ],
+  "instrumented_findings": []
+}

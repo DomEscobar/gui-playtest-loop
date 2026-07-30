@@ -1,0 +1,20 @@
+{
+  "goal_id": "dry-run-landing",
+  "source_prompt": "the media4agents landing page loads and shows the public media URL example",
+  "app": {
+    "start_command": "cd frontend-react && bun run dev",
+    "url": "http://localhost:3001"
+  },
+  "checks": [
+    {
+      "id": "landing-loads",
+      "statement": "The landing page loads without a blank screen or an uncaught error.",
+      "required": true
+    },
+    {
+      "id": "media-url-example-visible",
+      "statement": "The page shows an example media4agents URL (a /m/ path) for agents to copy.",
+      "required": true
+    }
+  ]
+}

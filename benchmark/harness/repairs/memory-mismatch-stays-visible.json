@@ -1,0 +1,9 @@
+{
+  "description": "Restore mismatch flip-back timeout",
+  "replacements": [
+    {
+      "find": "        } else {\n          // MUTATION: mismatch pairs stay visible — flip-back removed\n          flipped=[]; lock=false;\n        }",
+      "replace": "        } else {\n          setTimeout(() => {\n            boardEl.children[a].classList.add('hidden');\n            boardEl.children[b].classList.add('hidden');\n            flipped = [];\n            lock = false;\n          }, 900);\n        }"
+    }
+  ]
+}

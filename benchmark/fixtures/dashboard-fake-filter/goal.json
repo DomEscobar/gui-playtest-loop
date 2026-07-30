@@ -1,0 +1,10 @@
+{
+  "goal_id": "dashboard-fake-filter",
+  "source_prompt": "dashboard filter should show only matching items",
+  "app": { "start_command": "python benchmark/harness/serve.py --fixture dashboard-fake-filter", "url": "http://127.0.0.1:8765/app.html" },
+  "checks": [
+    { "id": "all-items-visible-initially", "statement": "All four items are visible on load.", "required": true },
+    { "id": "fruit-filter-hides-veg", "statement": "Selecting Fruit only hides vegetable items from the list.", "required": true },
+    { "id": "veg-filter-hides-fruit", "statement": "Selecting Vegetables only hides fruit items from the list.", "required": true }
+  ]
+}

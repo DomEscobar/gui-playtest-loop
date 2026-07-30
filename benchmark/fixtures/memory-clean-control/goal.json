@@ -1,0 +1,14 @@
+{
+  "goal_id": "memory-clean-control",
+  "source_prompt": "the memory game should be fully playable",
+  "app": {
+    "start_command": "python benchmark/harness/serve.py --fixture memory-clean-control",
+    "url": "http://127.0.0.1:8765/app.html"
+  },
+  "checks": [
+    { "id": "initial-state-hidden", "statement": "Before Start, all cards are face down.", "required": true },
+    { "id": "start-begins-game", "statement": "Clicking Start begins the game and disables the Start button.", "required": true },
+    { "id": "card-flips-on-click", "statement": "After Start, clicking a card flips it face up.", "required": true },
+    { "id": "mismatch-flips-back", "statement": "Non-matching pairs flip back within roughly 1.5s.", "required": true }
+  ]
+}

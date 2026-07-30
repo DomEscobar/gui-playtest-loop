@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sign Up</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 2rem auto; }
+    label { display: block; margin-top: 1rem; }
+    input { width: 100%; padding: 0.5rem; box-sizing: border-box; }
+    button { margin-top: 1rem; padding: 0.5rem 1rem; }
+    #error { color: #c00; margin-top: 0.5rem; min-height: 1.2em; }
+    #success { color: #060; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Sign Up</h1>
+  <form id="form">
+    <label>Email <input id="email" type="email" required /></label>
+    <label>Name <input id="name" type="text" required /></label>
+    <button type="submit">Create account</button>
+  </form>
+  <div id="error"></div>
+  <div id="success"></div>
+  <script>
+    const form = document.getElementById('form');
+    const emailEl = document.getElementById('email');
+    const nameEl = document.getElementById('name');
+    const errorEl = document.getElementById('error');
+    const successEl = document.getElementById('success');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      successEl.textContent = '';
+      if (!emailEl.value.includes('@')) {
+        errorEl.textContent = 'Please enter a valid email.';
+        // MUTATION: clears fields on validation error — user loses typed data
+        emailEl.value = '';
+        nameEl.value = '';
+        return;
+      }
+      errorEl.textContent = '';
+      successEl.textContent = 'Account created for ' + nameEl.value;
+    });
+  </script>
+</body>
+</html>

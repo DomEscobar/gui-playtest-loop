@@ -1,0 +1,10 @@
+{
+  "goal_id": "form-loses-data-on-validation",
+  "source_prompt": "signup form keeps input after validation error",
+  "app": { "start_command": "python benchmark/harness/serve.py --fixture form-loses-data-on-validation", "url": "http://127.0.0.1:8765/app.html" },
+  "checks": [
+    { "id": "invalid-email-shows-error", "statement": "Submitting invalid email shows an error message.", "required": true },
+    { "id": "data-retained-after-error", "statement": "After validation error, previously typed name and email remain in the fields.", "required": true },
+    { "id": "valid-submit-succeeds", "statement": "Valid email and name show success message.", "required": true }
+  ]
+}

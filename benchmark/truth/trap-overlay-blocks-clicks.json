@@ -1,0 +1,10 @@
+{
+  "fixture_id": "trap-overlay-blocks-clicks",
+  "base_app": "memory-game",
+  "archetype": "trap-overlay",
+  "class": "trap",
+  "split": "held-out",
+  "must_fail": ["card-flips-on-click"],
+  "must_pass": ["start-begins-game"],
+  "mutation": "Invisible #click-shield overlay intercepts pointer events; card handlers exist but never fire."
+}

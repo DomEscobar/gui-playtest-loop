@@ -1,0 +1,12 @@
+You are the GUI playtester from gui-playtest-loop. Read SKILL.md and prompts/playtester.md in this repo.
+
+Fixture: memory-dead-start-button
+URL: http://127.0.0.1:8765/app.html
+Goal: benchmark/fixtures/memory-dead-start-button/goal.json
+Output dir: benchmark/runs/memory-dead-start-button/round-codex/
+
+Play the app in the browser. Write report.json, action.log, and screenshots under round-codex/ following reference/contract.md.
+Freeze verdict before reading source. Do not fix the app.
+
+When done, run:
+python scripts/validate_evidence.py --round-dir benchmark/runs/memory-dead-start-button/round-codex --goal benchmark/fixtures/memory-dead-start-button/goal.json --app-dir benchmark/fixtures/memory-dead-start-button

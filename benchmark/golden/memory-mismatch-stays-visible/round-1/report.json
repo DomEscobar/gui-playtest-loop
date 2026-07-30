@@ -1,0 +1,33 @@
+{
+  "goal_id": "memory-mismatch-stays-visible",
+  "round": 1,
+  "playtester_run_id": "golden-memory-mismatch-stays-visible",
+  "checks": [
+    {
+      "id": "start-begins-game",
+      "status": "pass",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        1
+      ]
+    },
+    {
+      "id": "mismatch-flips-back",
+      "status": "fail",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        2,
+        3
+      ],
+      "repro": [
+        "Reproduce failure for mismatch-flips-back"
+      ],
+      "user_facing_bug": "Wrong pairs stay face up instead of flipping back."
+    }
+  ],
+  "instrumented_findings": []
+}

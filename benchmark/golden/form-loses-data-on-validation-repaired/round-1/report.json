@@ -1,0 +1,38 @@
+{
+  "goal_id": "form-loses-data-on-validation",
+  "round": 1,
+  "playtester_run_id": "golden-form-loses-data-on-validation",
+  "checks": [
+    {
+      "id": "invalid-email-shows-error",
+      "status": "pass",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        1
+      ]
+    },
+    {
+      "id": "data-retained-after-error",
+      "status": "pass",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        1
+      ]
+    },
+    {
+      "id": "valid-submit-succeeds",
+      "status": "pass",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        1
+      ]
+    }
+  ],
+  "instrumented_findings": []
+}

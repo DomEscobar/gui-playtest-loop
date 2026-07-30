@@ -1,0 +1,48 @@
+{
+  "goal_id": "dashboard-fake-filter",
+  "round": 1,
+  "playtester_run_id": "golden-dashboard-fake-filter",
+  "checks": [
+    {
+      "id": "all-items-visible-initially",
+      "status": "pass",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        1
+      ]
+    },
+    {
+      "id": "fruit-filter-hides-veg",
+      "status": "fail",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        2,
+        3
+      ],
+      "repro": [
+        "Reproduce failure for fruit-filter-hides-veg"
+      ],
+      "user_facing_bug": "Selecting Fruit only does not hide vegetable items."
+    },
+    {
+      "id": "veg-filter-hides-fruit",
+      "status": "fail",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "action_log_lines": [
+        2,
+        3
+      ],
+      "repro": [
+        "Reproduce failure for veg-filter-hides-fruit"
+      ],
+      "user_facing_bug": "Selecting Vegetables only does not hide fruit items."
+    }
+  ],
+  "instrumented_findings": []
+}

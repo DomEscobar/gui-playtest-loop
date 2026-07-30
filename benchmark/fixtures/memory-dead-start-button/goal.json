@@ -1,0 +1,35 @@
+{
+  "goal_id": "memory-dead-start-button",
+  "source_prompt": "the memory game should be fully playable from start to win",
+  "app": {
+    "start_command": "python benchmark/harness/serve.py --fixture memory-dead-start-button",
+    "url": "http://127.0.0.1:8765/app.html"
+  },
+  "checks": [
+    {
+      "id": "initial-state-hidden",
+      "statement": "Before clicking Start, all cards are face down.",
+      "required": true
+    },
+    {
+      "id": "start-begins-game",
+      "statement": "Clicking Start begins the game: status changes and cards become clickable.",
+      "required": true
+    },
+    {
+      "id": "card-flips-on-click",
+      "statement": "After the game has started, clicking a face-down card flips it face up.",
+      "required": true
+    },
+    {
+      "id": "mismatch-flips-back",
+      "statement": "A non-matching pair flips back face down within roughly 1.5s.",
+      "required": true
+    },
+    {
+      "id": "restart-resets",
+      "statement": "Restart resets score and board to the initial pre-start state.",
+      "required": false
+    }
+  ]
+}

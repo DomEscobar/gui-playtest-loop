@@ -1,0 +1,9 @@
+{
+  "description": "Restore Start button click handler",
+  "replacements": [
+    {
+      "find": "    // MUTATION: Start handler intentionally not wired — button renders but does nothing.\n    // startBtn.addEventListener('click', () => {\n    //   started = true;\n    //   statusEl.textContent = 'Find matching pairs!';\n    //   startBtn.disabled = true;\n    // });",
+      "replace": "    startBtn.addEventListener('click', () => {\n      started = true;\n      statusEl.textContent = 'Find matching pairs!';\n      startBtn.disabled = true;\n    });"
+    }
+  ]
+}

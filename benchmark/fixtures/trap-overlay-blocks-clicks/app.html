@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Memory Game</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 520px; margin: 2rem auto; padding: 0 1rem; position: relative; }
+    #board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 1rem; }
+    .card { aspect-ratio: 1; border: 2px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; background: #1a1a2e; color: #eee; }
+    .card.hidden { background: #16213e; color: transparent; }
+    #status { margin-top: 0.5rem; color: #666; }
+    /* TRAP: invisible overlay intercepts all clicks — handler code below is correct */
+    #click-shield {
+      position: absolute; top: 120px; left: 1rem; right: 1rem; bottom: 1rem;
+      background: transparent; z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <h1>Memory Game</h1>
+  <button id="start-btn" type="button">Start</button>
+  <div id="status">Click Start to begin.</div>
+  <div id="board"></div>
+  <div id="click-shield" aria-hidden="true"></div>
+  <script>
+    const EMOJIS = ['🍎', '🍌', '🍇', '🍊'];
+    let cards = [], started = false;
+    const boardEl = document.getElementById('board');
+    const statusEl = document.getElementById('status');
+    document.getElementById('start-btn').addEventListener('click', () => {
+      started = true;
+      statusEl.textContent = 'Find matching pairs!';
+      document.getElementById('start-btn').disabled = true;
+    });
+    cards = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
+    cards.forEach((emoji) => {
+      const el = document.createElement('div');
+      el.className = 'card hidden';
+      el.textContent = emoji;
+      el.addEventListener('click', () => {
+        if (!started) return;
+        el.classList.remove('hidden');
+        statusEl.textContent = 'Card clicked: ' + emoji;
+      });
+      boardEl.appendChild(el);
+    });
+  </script>
+</body>
+</html>

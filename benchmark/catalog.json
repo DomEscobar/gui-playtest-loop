@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "fixtures": [
+    {
+      "id": "memory-clean-control",
+      "class": "control",
+      "split": "train",
+      "archetype": "clean-control",
+      "tier1": true,
+      "tier2_autofix": false
+    },
+    {
+      "id": "memory-dead-start-button",
+      "class": "injected",
+      "split": "train",
+      "archetype": "dead-button",
+      "tier1": true,
+      "tier2_autofix": true,
+      "repair_hint_file": "benchmark/harness/repairs/memory-dead-start-button.json"
+    },
+    {
+      "id": "memory-mismatch-stays-visible",
+      "class": "injected",
+      "split": "train",
+      "archetype": "state-never-returns",
+      "tier1": true,
+      "tier2_autofix": true,
+      "repair_hint_file": "benchmark/harness/repairs/memory-mismatch-stays-visible.json"
+    },
+    {
+      "id": "form-loses-data-on-validation",
+      "class": "injected",
+      "split": "train",
+      "archetype": "data-loss-on-validation",
+      "tier1": true,
+      "tier2_autofix": true,
+      "repair_hint_file": "benchmark/harness/repairs/form-loses-data-on-validation.json"
+    },
+    {
+      "id": "dashboard-fake-filter",
+      "class": "injected",
+      "split": "held-out",
+      "archetype": "fake-dynamics",
+      "tier1": true,
+      "tier2_autofix": false
+    },
+    {
+      "id": "trap-overlay-blocks-clicks",
+      "class": "trap",
+      "split": "held-out",
+      "archetype": "trap-overlay",
+      "tier1": true,
+      "tier2_autofix": false
+    }
+  ],
+  "thresholds": {
+    "tier1_detection_recall_min": 0.85,
+    "tier1_detection_precision_min": 0.85,
+    "tier1_integrity_violations_max": 0,
+    "tier2_autofix_pass_rate_min": 0.75
+  }
+}

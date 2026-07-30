@@ -1,0 +1,14 @@
+{
+  "fixture_id": "memory-dead-start-button",
+  "base_app": "memory-game",
+  "archetype": "dead-button",
+  "class": "injected",
+  "split": "train",
+  "primary_fail": "start-begins-game",
+  "must_fail": ["start-begins-game"],
+  "cascade_fail_if_primary": {
+    "start-begins-game": ["card-flips-on-click", "mismatch-flips-back"]
+  },
+  "must_pass": ["initial-state-hidden"],
+  "mutation": "Start button click handler is commented out; button renders but does nothing."
+}

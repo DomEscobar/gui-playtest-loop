@@ -1,0 +1,9 @@
+{
+  "description": "Stop clearing fields on validation error",
+  "replacements": [
+    {
+      "find": "        errorEl.textContent = 'Please enter a valid email.';\n        // MUTATION: clears fields on validation error — user loses typed data\n        emailEl.value = '';\n        nameEl.value = '';\n        return;",
+      "replace": "        errorEl.textContent = 'Please enter a valid email.';\n        return;"
+    }
+  ]
+}
