@@ -34,8 +34,8 @@ example, a CLI coding agent without a subagent API).
   Reading only: goal.json, APP_GUIDE.md, memory/.
   ```
 
-- Do not read the diff you just wrote before finishing phase 3. Read
-  `goal.json` and `APP_GUIDE.md` only, then play the app.
+- Do not read the diff you just wrote before finishing the visual review.
+  Read `goal.json` and `APP_GUIDE.md` only, then play the app.
 - State the weaker guarantee in the final report: "role separation was
   simulated within a single session, not structurally enforced."
 - The evidence gate (`validate_evidence.py`) still runs and still matters —
@@ -64,10 +64,29 @@ console/network output. If your agent only has one of Playwright MCP or
 Chrome DevTools MCP available, use it for both interaction and diagnosis; the
 role and phase boundaries in `SKILL.md` still apply unchanged.
 
+## What the visual review needs
+
+`scripts/ux_probe.js` needs two things beyond the behavior playtest:
+
+- **In-page JavaScript evaluation.** Playwright's `page.evaluate`, CDP's
+  `Runtime.evaluate` with `returnByValue`, or any equivalent. The probe is a
+  self-contained IIFE that returns a plain object.
+- **Viewport control**, to review more than one width. Playwright's
+  `setViewportSize` or CDP `Emulation.setDeviceMetricsOverride` both work.
+
+If viewport control is unavailable, run the probe at whatever width you have,
+record that width in every finding, and say in the final report that the
+narrow-viewport rules were not exercised. Do not claim a width you did not
+actually render. If in-page evaluation is unavailable, skip the measured layer
+entirely and report only judged findings — never hand-estimate a contrast
+ratio.
+
 ## What never changes across tiers
 
-- The verdict is still frozen before phase 4 (diagnosis), regardless of
-  whether role separation is structural (Tier A) or disciplined (Tier B).
+- The behavior verdict is still frozen before the visual review, and both are
+  frozen before diagnosis, regardless of whether role separation is structural
+  (Tier A) or disciplined (Tier B).
+- A judged UX finding still never gates, at any tier.
 - `goal.json` is still frozen before round 1.
 - `scripts/validate_evidence.py` still gates every round the same way. It
   checks files on disk, so it is the one part of this system whose guarantee

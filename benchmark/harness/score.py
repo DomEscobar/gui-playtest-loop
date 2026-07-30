@@ -19,6 +19,9 @@ class ScoreResult:
     expected_fails_missed: list[str] = field(default_factory=list)
     false_passes: list[str] = field(default_factory=list)
     false_fails: list[str] = field(default_factory=list)
+    ux_rules_hit: list[str] = field(default_factory=list)
+    ux_rules_missed: list[str] = field(default_factory=list)
+    ux_false_positives: list[str] = field(default_factory=list)
 
     @property
     def detection_recall(self) -> float:
@@ -33,6 +36,13 @@ class ScoreResult:
         if not reported_fails:
             return 1.0 if not self.false_fails else 0.0
         return len(self.expected_fails_hit) / len(reported_fails)
+
+    @property
+    def ux_recall(self) -> float:
+        expected = set(self.ux_rules_hit) | set(self.ux_rules_missed)
+        if not expected:
+            return 1.0
+        return len(self.ux_rules_hit) / len(expected)
 
 
 def load_json(path: Path) -> dict:
@@ -97,7 +107,39 @@ def score_fixture(truth: dict, report: dict) -> ScoreResult:
             result.passed = False
             result.problems.append(f"unexpected fail on check '{check_id}'")
 
+    _score_ux(truth, report, result)
     return result
+
+
+def _score_ux(truth: dict, report: dict, result: ScoreResult) -> None:
+    """Score the visual track: did the probe-backed findings catch the defects?
+
+    Only measured findings count. A judged finding is one reviewer's opinion and
+    must never move a benchmark score, for the same reason it may never gate a
+    goal.
+    """
+    measured_rules = {
+        finding.get("rule")
+        for finding in report.get("ux_findings", [])
+        if finding.get("layer") == "measured" and finding.get("rule")
+    }
+
+    for rule in sorted(set(truth.get("must_flag_ux", []))):
+        if rule in measured_rules:
+            result.ux_rules_hit.append(rule)
+        else:
+            result.ux_rules_missed.append(rule)
+            result.passed = False
+            result.problems.append(f"missed expected ux rule '{rule}'")
+
+    if truth.get("forbid_ux_findings") and measured_rules:
+        for rule in sorted(measured_rules):
+            result.ux_false_positives.append(rule)
+        result.passed = False
+        result.problems.append(
+            "control fixture reported measured ux findings: "
+            + ", ".join(sorted(measured_rules))
+        )
 
 
 def parse_args() -> argparse.Namespace:
@@ -122,6 +164,10 @@ def main() -> int:
         "expected_fails_hit": result.expected_fails_hit,
         "expected_fails_missed": result.expected_fails_missed,
         "false_fails": result.false_fails,
+        "ux_recall": result.ux_recall,
+        "ux_rules_hit": result.ux_rules_hit,
+        "ux_rules_missed": result.ux_rules_missed,
+        "ux_false_positives": result.ux_false_positives,
         "problems": result.problems,
     }
 
@@ -132,7 +178,9 @@ def main() -> int:
     if result.passed:
         print(
             f"PASS {result.fixture_id} "
-            f"(recall={result.detection_recall:.2f}, precision={result.detection_precision:.2f})"
+            f"(recall={result.detection_recall:.2f}, "
+            f"precision={result.detection_precision:.2f}, "
+            f"ux_recall={result.ux_recall:.2f})"
         )
         return 0
 

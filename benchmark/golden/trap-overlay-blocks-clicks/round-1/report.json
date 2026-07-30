@@ -29,5 +29,27 @@
       "user_facing_bug": "Cards do not flip; clicks appear to hit an invisible overlay."
     }
   ],
-  "instrumented_findings": []
+  "instrumented_findings": [],
+  "ux_findings": [
+    {
+      "id": "ux-1",
+      "layer": "measured",
+      "rule": "occluded-interactive",
+      "severity": "blocker",
+      "selector": "div.card:nth-of-type(1)",
+      "viewport": 1280,
+      "observation": "Every card's centre point hit-tests to #click-shield rather than the card.",
+      "user_impact": "Cards cannot be clicked at all because a transparent overlay covers the board.",
+      "evidence": [
+        "screenshots/placeholder.png"
+      ],
+      "measurement": {
+        "metric": "hit_test",
+        "actual": 0,
+        "threshold": 1,
+        "unit": "boolean",
+        "approximated": false
+      }
+    }
+  ]
 }

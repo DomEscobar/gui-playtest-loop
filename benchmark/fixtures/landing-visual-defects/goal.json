@@ -1,0 +1,18 @@
+{
+  "goal_id": "landing-visual-defects",
+  "source_prompt": "a landing page whose controls work and whose surface is actually finished",
+  "app": {
+    "start_command": "python benchmark/harness/serve.py --fixture landing-visual-defects",
+    "url": "http://127.0.0.1:8765/app.html"
+  },
+  "checks": [
+    { "id": "cta-starts-trial", "statement": "Clicking Start free shows a confirmation message.", "required": true },
+    { "id": "banner-dismisses", "statement": "Clicking the banner dismiss control removes the banner.", "required": true },
+    { "id": "contact-responds", "statement": "Clicking Contact sales shows a confirmation message.", "required": true }
+  ],
+  "ux_policy": {
+    "enabled": true,
+    "gate_on": ["blocker"],
+    "viewports": [1280]
+  }
+}

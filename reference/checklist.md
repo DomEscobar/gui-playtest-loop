@@ -78,8 +78,38 @@ before writing anything down:
 | Uncaught exception during a flow, even if the UI looks fine | **FAIL** — blocking, the exception is the evidence |
 | Console warning with no observable effect | Advisory note, not a FAIL |
 | Reproduces on only one of three attempts | **Flake suspicion** — record in `memory/skills.jsonl`, do not report as a confirmed FAIL yet |
-| "Feels slow," "color is ugly," "layout could be nicer" | **Not a finding** — outside this loop's scope, do not put it in the report |
+| A visual defect the probe measured — clipped text, sideways scroll, an occluded control, contrast below the reading floor | **Measured UX finding** — goes in `ux_findings`, may gate per `ux_policy` |
+| A craft problem you can point at but not measure — the primary action does not stand out, an empty state is missing | **Judged UX finding** — goes in `ux_findings`, capped at `major`, never gates |
+| "Feels slow," "color is ugly," "I'd have picked another font" | **Not a finding** — no measured rule and no named heuristic fits, so it goes in `memory/skills.jsonl` if anywhere |
+
+The dividing line is not "objective vs subjective" but **"can the next
+reviewer check it?"** A judged finding is still reviewable when it names a
+heuristic, points at a screenshot, and states the user impact. A preference
+with none of those is noise, and noise is what makes a builder stop reading
+reports.
 
 Subjective, unfalsifiable statements do not belong in `goal.json` either.
 "The difficulty curve feels right" is not checkable by a tester who only
 sees the rendered surface; "the spawn rate increases each wave" is.
+
+## Visual sweep
+
+Phase 4 runs after the behavior verdict is frozen. The probe covers the
+measurable part; these are the things you have to look for yourself, with the
+named heuristics from [ux-review.md](ux-review.md):
+
+1. **Primary action** — on each screen, is the one thing the user should do
+   the most prominent thing? Or does a secondary button shout equally loud?
+2. **The five states** — empty, loading, error, success, disabled. You
+   already drove the app into most of them in phase 3; screenshot each and
+   check it says something distinct.
+3. **Feedback** — after every action that changed something, was there a
+   visible acknowledgement? Silent success is a real defect.
+4. **Consistency** — the same concept (a card, a destructive action, a
+   status) should look the same everywhere it appears.
+5. **Copy** — do labels, errors, and empty states tell the user what to do
+   next, or only what went wrong?
+6. **Rhythm** — does the layout read as a deliberate composition, or as the
+   default hero → three features → CTA template?
+7. **Density** — are related things grouped and unrelated things separated,
+   at every reviewed viewport?

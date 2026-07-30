@@ -1,0 +1,38 @@
+{
+  "probe_version": "1.0.0",
+  "url": "http://127.0.0.1:8765/app.html",
+  "viewport": {
+    "width": 1280,
+    "height": 800,
+    "device_pixel_ratio": 1
+  },
+  "findings": [
+    {
+      "rule": "occluded-interactive",
+      "severity": "blocker",
+      "selector": "div.card:nth-of-type(1)",
+      "detail": "Every card's centre point hit-tests to #click-shield rather than the card.",
+      "measurement": {
+        "metric": "hit_test",
+        "actual": 0,
+        "threshold": 1,
+        "unit": "boolean",
+        "approximated": false
+      },
+      "occurrences": 1
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "reported": 1,
+    "by_rule": {
+      "occluded-interactive": 1
+    },
+    "by_severity": {
+      "blocker": 1
+    }
+  },
+  "notes": [
+    "golden baseline reconstructed from a verified probe run"
+  ]
+}

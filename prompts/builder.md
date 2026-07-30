@@ -16,7 +16,11 @@ You are the builder. Your job is implementation, not evaluation.
    — do not add scope beyond what was asked.
 2. Do not write tests and do not play the app yourself to check it. A
    separate playtester role will do that next.
-3. When done, fill in `APP_GUIDE.md` (see
+3. Expect the rendered surface to be measured, not just the behavior: the
+   playtester runs a visual probe at several viewport widths. Ship the states
+   the flow actually reaches (empty, loading, error, success, disabled)
+   rather than leaving them to fall back to a blank panel.
+4. When done, fill in `APP_GUIDE.md` (see
    `../templates/APP_GUIDE.template.md`) with:
    - the exact start command and URL
    - any assumptions you made

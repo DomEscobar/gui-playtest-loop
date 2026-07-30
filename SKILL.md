@@ -2,11 +2,13 @@
 name: gui-playtest-loop
 description: >-
   Drives a bounded generate-playtest-repair goal loop that verifies AI-generated
-  or human-written interactive web UIs against observable expected behaviors,
-  using a separate playtester role and a deterministic evidence gate instead of
-  the builder's own self-report. Use when the user asks to playtest a web app,
-  verify a generated UI actually works, run a GUI goal loop, fix a UI until a
-  goal is met, or invokes "/goal" against a running local app.
+  or human-written interactive web UIs against observable expected behaviors
+  and measured visual quality, using a separate playtester role and a
+  deterministic evidence gate instead of the builder's own self-report. Use
+  when the user asks to playtest a web app, verify a generated UI actually
+  works, review the visual craft or UX of a rendered page, run a GUI goal
+  loop, fix a UI until a goal is met, or invokes "/goal" against a running
+  local app.
 disable-model-invocation: true
 ---
 
@@ -49,9 +51,10 @@ collapse "build" and "judge" into the same step.
 4. VALIDATE Run scripts/validate_evidence.py against the run folder.
             exit 1 -> evidence incomplete, repeat step 3, does not count as a round.
             exit 0 -> continue.
-5. GATE     All required checks pass?
+5. GATE     All required checks pass, and no gating UX finding remains?
             yes -> DONE. Report final state.
-            no  -> build a fail packet (failing checks + their evidence only).
+            no  -> build a fail packet (failing checks + gating UX findings,
+                   with their evidence only).
 6. BUDGET   Stop condition reached? (see "Stop conditions")
             yes -> STOP, report residual failures honestly.
             no  -> round += 1, hand fail packet to Builder, goto 2.
@@ -73,23 +76,35 @@ The access is time-gated, not role-gated:
 [3] Interactive playtest  Run through goal.json's checks. One screenshot per
                            critical state, one action-log line per interaction.
     ─────────────────────────────────────────────────────────────
-                     VERDICT GATE (see below)
+                  BEHAVIOR VERDICT GATE (see below)
     ─────────────────────────────────────────────────────────────
-[4] Diagnosis              NOW read source, console, network, performance.
+[4] Visual & UX review     Still rendered-surface only, still no source code.
+                           Run scripts/ux_probe.js at each policy viewport,
+                           replay the states reached in phase 3, and write
+                           measured + judged findings. See
+                           reference/ux-review.md.
+    ─────────────────────────────────────────────────────────────
+                       UX VERDICT GATE
+    ─────────────────────────────────────────────────────────────
+[5] Diagnosis              NOW read source, console, network, performance.
                            May add temporary instrumentation. Never changes
-                           the verdict, only sharpens the reproduction and
+                           either verdict, only sharpens the reproduction and
                            locates the likely file/line. See
                            reference/instrumentation.md.
-[5] Memory capture         Write path knowledge, recurring selectors, wait
+[6] Memory capture         Write path knowledge, recurring selectors, wait
                            patterns, and false positives to memory. See
                            reference/memory.md.
 ```
 
+Behavior is judged first on purpose. A polished-looking surface biases a
+reviewer toward assuming the button works, so the functional verdict is
+frozen before anyone looks at craft.
+
 ### The verdict gate
 
-Write `report.json` at the end of phase 3, before opening any source file,
-console panel, or devtools timeline. This ordering is the entire anti-cheat
-mechanism:
+Write `checks` into `report.json` at the end of phase 3 and `ux_findings` at
+the end of phase 4 — both before opening any source file, console panel, or
+devtools timeline. This ordering is the entire anti-cheat mechanism:
 
 - **Code informs the report. Code never produces a pass.** A handler that
   looks correct is not evidence. A screenshot showing the expected state is.
@@ -102,6 +117,25 @@ mechanism:
 - Do not derive a check's numeric thresholds from the source. If the code
   says `setTimeout(1000)`, the check is "returns within roughly 1.5s of
   visible delay," not "returns within 1000ms."
+- `scripts/ux_probe.js` reads layout and computed style without mutating
+  anything, so it is observation, not instrumentation, and belongs in phase 4
+  rather than behind the diagnosis gate.
+
+### The two verdict tracks
+
+`checks` and `ux_findings` are separate and never merge:
+
+| | `checks` | `ux_findings` |
+|---|---|---|
+| Question | can the user complete the behavior? | is the surface actually built? |
+| Frozen at | end of phase 3 | end of phase 4 |
+| Gates DONE | always, for required checks | only measured findings, per `ux_policy.gate_on` |
+
+A judged UX finding can never fail a goal — it is advisory input for the
+builder and a candidate for a future `goal.json`. Only measured findings, with
+a number and a threshold behind them, are allowed to gate. Without that
+asymmetry, "I don't love the spacing" becomes a blocking verdict and the loop
+stops being falsifiable. See [reference/ux-review.md](reference/ux-review.md).
 
 ## Stop conditions
 
@@ -120,24 +154,29 @@ A loop with no stop condition is not a goal loop, it is a runaway cost.
 | Risk | Mitigation |
 |---|---|
 | Builder grades its own work | Separate playtester role; builder never plays to self-certify |
-| Verdict softened after seeing code | Verdict frozen before phase 4 |
+| Verdict softened after seeing code | Both verdicts frozen before the diagnosis phase |
 | Fake pass with no evidence | `scripts/validate_evidence.py` rejects passes without artifacts |
 | Instrumentation leaks into the repo | Marker convention + mandatory revert + clean rerun, see reference/instrumentation.md |
 | Same flake reported every round as new | Skill memory records false positives, see reference/memory.md |
 | Subjective, unfalsifiable checks | goal.json checks must be observable from the rendered surface and derived from stated intent, not personal taste |
+| Taste dressed up as a blocking verdict | Judged UX findings cap at `major` and never gate; only measured findings with a number and a saved probe run can block |
+| Design skill grading its own output | The probe measures the painted result, not the token file or the generator's self-score |
 
 ## Limits, stated plainly
 
-This loop finds broken flows, dead controls, missing state transitions, and
-regressions with reproducible evidence. It does not replace a full
-accessibility audit, does not judge whether an experience feels good, and is
-not a security review. Treat a `PASS` as "the specified behavior was
-observed," not as "this is good software."
+This loop finds broken flows, dead controls, missing state transitions,
+regressions, and measurable visual defects with reproducible evidence. It is
+not an accessibility audit and makes no compliance claim. It is not a security
+review. Its judged UX layer is one reviewer's opinion, explicitly labelled as
+such, and cannot fail a goal on its own. Treat a `PASS` as "the specified
+behavior was observed and the surface cleared the measured thresholds," not as
+"this is good software."
 
 ## Reference material
 
 - [reference/contract.md](reference/contract.md) — `goal.json` / `report.json` schemas and evidence rules
 - [reference/checklist.md](reference/checklist.md) — what to actually test, failure archetypes, severity classification
+- [reference/ux-review.md](reference/ux-review.md) — the visual/UX track: measured rules, judged heuristics, gating policy
 - [reference/memory.md](reference/memory.md) — episode / skill / world memory layers
 - [reference/instrumentation.md](reference/instrumentation.md) — temporary logging contract
 - [reference/portability.md](reference/portability.md) — running this with agents that lack subagents or browser tools

@@ -51,12 +51,21 @@
       "archetype": "trap-overlay",
       "tier1": true,
       "tier2_autofix": false
+    },
+    {
+      "id": "landing-visual-defects",
+      "class": "injected",
+      "split": "held-out",
+      "archetype": "visual-defects",
+      "tier1": true,
+      "tier2_autofix": false
     }
   ],
   "thresholds": {
     "tier1_detection_recall_min": 0.85,
     "tier1_detection_precision_min": 0.85,
     "tier1_integrity_violations_max": 0,
+    "tier1_ux_recall_min": 0.85,
     "tier2_autofix_pass_rate_min": 0.75
   }
 }

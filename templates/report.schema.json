@@ -13,6 +13,11 @@
       "minItems": 1,
       "items": { "$ref": "#/$defs/checkResult" }
     },
+    "ux_findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/uxFinding" },
+      "description": "Visual and UX review results. Separate from checks: a judged finding can never fail a goal. See reference/ux-review.md."
+    },
     "instrumented_findings": {
       "type": "array",
       "items": { "$ref": "#/$defs/instrumentedFinding" }
@@ -61,6 +66,88 @@
           }
         }
       ]
+    },
+    "uxFinding": {
+      "type": "object",
+      "required": ["id", "layer", "severity", "observation", "user_impact", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "layer": { "type": "string", "enum": ["measured", "judged"] },
+        "severity": { "type": "string", "enum": ["blocker", "major", "minor"] },
+        "rule": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Required for measured findings. The ux_probe.js rule id, e.g. low-legibility."
+        },
+        "heuristic": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Required for judged findings. One of the named heuristics in reference/ux-review.md."
+        },
+        "surface": {
+          "type": "string",
+          "description": "Route, screen, or component the finding applies to."
+        },
+        "selector": { "type": "string" },
+        "viewport": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Viewport width in CSS pixels the finding was observed at."
+        },
+        "observation": { "type": "string", "minLength": 1 },
+        "user_impact": { "type": "string", "minLength": 1 },
+        "rationale": {
+          "type": "string",
+          "description": "Required for judged findings. Why the observation causes the impact."
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Required for judged findings."
+        },
+        "measurement": {
+          "$ref": "#/$defs/uxMeasurement",
+          "description": "Required for measured findings."
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "proposed_check": {
+          "type": ["string", "null"],
+          "description": "Candidate observable statement for a FUTURE goal.json. Never added to the frozen current one."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "layer": { "const": "measured" } } },
+          "then": { "required": ["rule", "measurement"] }
+        },
+        {
+          "if": { "properties": { "layer": { "const": "judged" } } },
+          "then": {
+            "required": ["heuristic", "rationale", "confidence"],
+            "properties": { "severity": { "enum": ["major", "minor"] } }
+          }
+        }
+      ]
+    },
+    "uxMeasurement": {
+      "type": "object",
+      "required": ["metric", "actual", "threshold", "unit"],
+      "additionalProperties": true,
+      "properties": {
+        "metric": { "type": "string", "minLength": 1 },
+        "actual": { "type": "number" },
+        "threshold": { "type": "number" },
+        "unit": { "type": "string", "minLength": 1 },
+        "approximated": {
+          "type": "boolean",
+          "description": "True when the measurement sat on an image or gradient background and needs visual confirmation."
+        }
+      }
     },
     "instrumentedFinding": {
       "type": "object",

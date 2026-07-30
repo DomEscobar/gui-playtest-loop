@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Validate that a playtest round produced structurally complete evidence.
 
-This script does not and cannot judge whether the app works. It only checks
-that the playtester actually looked: every goal check is covered, every pass
-has an artifact that exists on disk, every fail has repro steps, the action
-log is non-empty, no temporary instrumentation markers were left behind, and
-every instrumented finding has an archived patch and an explicit clean-rerun
-flag.
+This script does not and cannot judge whether the app works or looks good. It
+only checks that the playtester actually looked: every goal check is covered,
+every pass has an artifact that exists on disk, every fail has repro steps,
+the action log is non-empty, no temporary instrumentation markers were left
+behind, every instrumented finding has an archived patch and an explicit
+clean-rerun flag, and every UX finding obeys the two-layer contract — measured
+findings carry numbers plus a saved probe run, judged findings name a known
+heuristic and never claim blocker severity.
 
 Usage:
     python validate_evidence.py --round-dir <path/to/evidence/round-N> \
@@ -31,6 +33,29 @@ from pathlib import Path
 INSTRUMENTATION_MARKER = "PLAYTEST-TMP"
 VALID_STATUSES = {"pass", "fail", "blocked"}
 VALID_FINDING_SOURCES = {"console", "network", "runtime-injection", "temp-log"}
+
+VALID_UX_LAYERS = {"measured", "judged"}
+VALID_UX_SEVERITIES = {"blocker", "major", "minor"}
+VALID_UX_CONFIDENCE = {"high", "medium", "low"}
+
+# Judged findings must name one of these. Freeform aesthetic commentary is not
+# a finding. See reference/ux-review.md.
+VALID_UX_HEURISTICS = {
+    "hierarchy-primary-action",
+    "hierarchy-competing-emphasis",
+    "affordance-unclear",
+    "feedback-missing",
+    "state-missing",
+    "consistency-drift",
+    "copy-unclear",
+    "density-cramped",
+    "density-bloated",
+    "rhythm-templated",
+    "motion-excessive",
+    "motion-missing",
+    "tone-mismatch",
+    "flow-friction",
+}
 
 DEFAULT_SCAN_EXCLUDES = {
     ".git",
@@ -178,6 +203,106 @@ def check_instrumented_findings(
             result.add(f"instrumented finding '{finding_id}' has no observation")
 
 
+def check_ux_findings(report: dict, round_dir: Path, result: ValidationResult) -> None:
+    """Enforce the two-layer UX contract from reference/ux-review.md.
+
+    Measured findings must carry numbers and be backed by a saved probe run.
+    Judged findings must name a known heuristic, explain themselves, and may
+    never reach blocker severity — a judgment call cannot fail a goal.
+    """
+    findings = report.get("ux_findings") or []
+    if not findings:
+        return
+
+    seen_ids: set[str] = set()
+    has_measured = False
+
+    for finding in findings:
+        finding_id = finding.get("id") or "<unknown>"
+        if not finding.get("id"):
+            result.add("a ux finding is missing 'id'")
+        elif finding_id in seen_ids:
+            result.add(f"duplicate ux finding id '{finding_id}'")
+        seen_ids.add(finding_id)
+
+        layer = finding.get("layer")
+        if layer not in VALID_UX_LAYERS:
+            result.add(f"ux finding '{finding_id}' has invalid layer '{layer}'")
+
+        severity = finding.get("severity")
+        if severity not in VALID_UX_SEVERITIES:
+            result.add(f"ux finding '{finding_id}' has invalid severity '{severity}'")
+
+        for field in ("observation", "user_impact"):
+            if not finding.get(field):
+                result.add(f"ux finding '{finding_id}' has no {field}")
+
+        evidence = finding.get("evidence") or []
+        if not evidence:
+            result.add(f"ux finding '{finding_id}' has no evidence")
+        _check_paths_exist(evidence, round_dir, f"ux finding '{finding_id}'", result)
+
+        if layer == "measured":
+            has_measured = True
+            _check_measured_ux_finding(finding, finding_id, result)
+        elif layer == "judged":
+            _check_judged_ux_finding(finding, finding_id, severity, result)
+
+    if has_measured and not any(round_dir.glob("ux_probe*.json")):
+        result.add(
+            "ux_findings contains measured findings but no ux_probe*.json artifact "
+            f"was found in {round_dir}"
+        )
+
+
+def _check_measured_ux_finding(
+    finding: dict, finding_id: str, result: ValidationResult
+) -> None:
+    if not finding.get("rule"):
+        result.add(f"measured ux finding '{finding_id}' has no probe rule id")
+
+    measurement = finding.get("measurement")
+    if not isinstance(measurement, dict):
+        result.add(f"measured ux finding '{finding_id}' has no measurement object")
+        return
+
+    for field in ("metric", "unit"):
+        if not measurement.get(field):
+            result.add(
+                f"measured ux finding '{finding_id}' measurement is missing '{field}'"
+            )
+    for field in ("actual", "threshold"):
+        value = measurement.get(field)
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            result.add(
+                f"measured ux finding '{finding_id}' measurement '{field}' "
+                "must be a number"
+            )
+
+
+def _check_judged_ux_finding(
+    finding: dict, finding_id: str, severity: str | None, result: ValidationResult
+) -> None:
+    heuristic = finding.get("heuristic")
+    if heuristic not in VALID_UX_HEURISTICS:
+        result.add(
+            f"judged ux finding '{finding_id}' names unknown heuristic "
+            f"'{heuristic}'; see reference/ux-review.md"
+        )
+    if not finding.get("rationale"):
+        result.add(f"judged ux finding '{finding_id}' has no rationale")
+    if finding.get("confidence") not in VALID_UX_CONFIDENCE:
+        result.add(
+            f"judged ux finding '{finding_id}' has invalid confidence "
+            f"'{finding.get('confidence')}'"
+        )
+    if severity == "blocker":
+        result.add(
+            f"judged ux finding '{finding_id}' is marked blocker; a judgment call "
+            "may never block the goal, use major instead"
+        )
+
+
 def scan_for_leftover_markers(
     app_dir: Path, result: ValidationResult, excludes: set[str]
 ) -> None:
@@ -215,6 +340,7 @@ def validate(
     if report is not None:
         check_report_shape(report, result)
         check_evidence_artifacts(report, round_dir, result)
+        check_ux_findings(report, round_dir, result)
         check_instrumented_findings(report, round_dir, result)
 
     if report is not None and goal is not None:

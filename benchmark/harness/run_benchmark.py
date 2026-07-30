@@ -54,6 +54,7 @@ def main() -> int:
             "failed": 0,
             "detection_recall_sum": 0.0,
             "detection_precision_sum": 0.0,
+            "ux_recall_sum": 0.0,
         },
         "thresholds": catalog.get("thresholds", {}),
         "tier1_passed": False,
@@ -80,6 +81,8 @@ def main() -> int:
             "score_ok": None,
             "detection_recall": None,
             "detection_precision": None,
+            "ux_recall": None,
+            "ux_false_positives": [],
             "problems": [],
         }
 
@@ -108,6 +111,8 @@ def main() -> int:
             score_data = json.loads(score_json.read_text(encoding="utf-8"))
             row["detection_recall"] = score_data.get("detection_recall")
             row["detection_precision"] = score_data.get("detection_precision")
+            row["ux_recall"] = score_data.get("ux_recall")
+            row["ux_false_positives"] = score_data.get("ux_false_positives", [])
             row["problems"] = score_data.get("problems", [])
         else:
             row["problems"].append(proc.stderr.strip() or proc.stdout.strip())
@@ -117,6 +122,7 @@ def main() -> int:
             aggregate["totals"]["passed"] += 1
             aggregate["totals"]["detection_recall_sum"] += row["detection_recall"] or 0.0
             aggregate["totals"]["detection_precision_sum"] += row["detection_precision"] or 0.0
+            aggregate["totals"]["ux_recall_sum"] += row["ux_recall"] or 0.0
         else:
             aggregate["totals"]["failed"] += 1
             exit_code = 1
@@ -133,17 +139,21 @@ def main() -> int:
         aggregate["totals"]["detection_precision_avg"] = (
             aggregate["totals"]["detection_precision_sum"] / n
         )
+        aggregate["totals"]["ux_recall_avg"] = aggregate["totals"]["ux_recall_sum"] / n
     else:
         aggregate["totals"]["detection_recall_avg"] = 0.0
         aggregate["totals"]["detection_precision_avg"] = 0.0
+        aggregate["totals"]["ux_recall_avg"] = 0.0
 
     thresholds = catalog.get("thresholds", {})
     recall_min = thresholds.get("tier1_detection_recall_min", 0.85)
     precision_min = thresholds.get("tier1_detection_precision_min", 0.85)
+    ux_recall_min = thresholds.get("tier1_ux_recall_min", 0.85)
     aggregate["tier1_passed"] = (
         exit_code == 0
         and aggregate["totals"]["detection_recall_avg"] >= recall_min
         and aggregate["totals"]["detection_precision_avg"] >= precision_min
+        and aggregate["totals"]["ux_recall_avg"] >= ux_recall_min
     )
 
     (results_dir / "benchmark_summary.json").write_text(
@@ -155,7 +165,8 @@ def main() -> int:
     )
     print(
         f"Avg recall={aggregate['totals']['detection_recall_avg']:.2f} "
-        f"precision={aggregate['totals']['detection_precision_avg']:.2f}"
+        f"precision={aggregate['totals']['detection_precision_avg']:.2f} "
+        f"ux_recall={aggregate['totals']['ux_recall_avg']:.2f}"
     )
     print(f"Summary: {results_dir / 'benchmark_summary.json'}")
     return exit_code

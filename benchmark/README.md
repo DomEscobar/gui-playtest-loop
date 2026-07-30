@@ -30,12 +30,39 @@ benchmark/
 
 | ID | Class | Split | What breaks |
 |----|-------|-------|-------------|
-| `memory-clean-control` | control | train | nothing — reference |
+| `memory-clean-control` | control | train | nothing — reference; the probe must stay silent on it |
 | `memory-dead-start-button` | injected | train | Start handler commented out |
 | `memory-mismatch-stays-visible` | injected | train | mismatch never flips back |
 | `form-loses-data-on-validation` | injected | train | form clears fields on error |
 | `dashboard-fake-filter` | injected | held-out | filter UI fakes change |
 | `trap-overlay-blocks-clicks` | trap | held-out | invisible overlay blocks clicks |
+| `landing-visual-defects` | injected | held-out | behavior works, surface carries 7 measured visual defects |
+
+## Verified probe behaviour
+
+`scripts/ux_probe.js` was run in a real browser against these fixtures:
+
+| Fixture | Result |
+|---|---|
+| `memory-clean-control` | **0 findings** — no false positives |
+| `landing-visual-defects` | 9 rules, 6 blockers, every one confirmed in the screenshot |
+| `trap-overlay-blocks-clicks` | `occluded-interactive` blocker on 8 cards, naming `#click-shield` |
+
+The trap result matters: the probe found a *behavior* trap through pure visual
+measurement, independently of the interaction playtest.
+
+![landing-visual-defects at 1280px](../docs/images/landing-visual-defects-1280.png)
+
+Every measured finding is visible in that capture: the subtitle is invisible
+against white, all three card titles are cut off mid-word, the logo is
+stretched from a square source, the metrics strip runs off the right edge, and
+the Contact sales button is still browser-default chrome.
+
+An earlier revision of the probe reported **17 blocker findings on the clean
+control** — it flagged face-down cards (`color: transparent`) and the disabled
+Restart button as unreadable. That run is why the probe now skips deliberately
+hidden text and disabled controls, and why `forbid_ux_findings` exists as a
+scored property rather than a comment.
 
 ## Spike result (memory-dead-start-button)
 

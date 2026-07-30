@@ -1,0 +1,129 @@
+{
+  "probe_version": "1.0.0",
+  "url": "http://127.0.0.1:8765/app.html",
+  "viewport": {
+    "width": 1280,
+    "height": 800,
+    "device_pixel_ratio": 1
+  },
+  "findings": [
+    {
+      "rule": "viewport-overflow",
+      "severity": "blocker",
+      "selector": "",
+      "detail": "The document scrolls 312px sideways at a 1280px viewport.",
+      "measurement": {
+        "metric": "horizontal_overflow",
+        "actual": 312,
+        "threshold": 0,
+        "unit": "px",
+        "approximated": false
+      },
+      "occurrences": 1
+    },
+    {
+      "rule": "low-legibility",
+      "severity": "blocker",
+      "selector": "p.subtitle",
+      "detail": "The hero subtitle renders at a 1.54:1 contrast ratio against white.",
+      "measurement": {
+        "metric": "contrast_ratio",
+        "actual": 1.54,
+        "threshold": 4.5,
+        "unit": "ratio",
+        "approximated": false
+      },
+      "occurrences": 1
+    },
+    {
+      "rule": "text-clipped",
+      "severity": "blocker",
+      "selector": "p.card-title",
+      "detail": "Card titles are cut off by overflow:hidden with no ellipsis.",
+      "measurement": {
+        "metric": "overflow_x",
+        "actual": 125,
+        "threshold": 0,
+        "unit": "px",
+        "approximated": false
+      },
+      "occurrences": 1
+    },
+    {
+      "rule": "target-too-small",
+      "severity": "blocker",
+      "selector": "#dismiss",
+      "detail": "The banner dismiss control measures 14x14px.",
+      "measurement": {
+        "metric": "min_side",
+        "actual": 14,
+        "threshold": 24,
+        "unit": "px",
+        "approximated": false
+      },
+      "occurrences": 1
+    },
+    {
+      "rule": "image-aspect-distortion",
+      "severity": "major",
+      "selector": "#logo",
+      "detail": "The logo's natural ratio is 1:1 but it renders at 240x80.",
+      "measurement": {
+        "metric": "aspect_drift",
+        "actual": 200,
+        "threshold": 2,
+        "unit": "percent",
+        "approximated": false
+      },
+      "occurrences": 1
+    },
+    {
+      "rule": "tiny-text",
+      "severity": "major",
+      "selector": "p.legal",
+      "detail": "Legal text renders at 9px.",
+      "measurement": {
+        "metric": "font_size",
+        "actual": 9,
+        "threshold": 12,
+        "unit": "px",
+        "approximated": false
+      },
+      "occurrences": 1
+    },
+    {
+      "rule": "unstyled-default",
+      "severity": "major",
+      "selector": "#contact",
+      "detail": "The Contact sales button still uses user-agent default chrome.",
+      "measurement": {
+        "metric": "default_signals",
+        "actual": 1,
+        "threshold": 0,
+        "unit": "count",
+        "approximated": false
+      },
+      "occurrences": 1
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "reported": 7,
+    "by_rule": {
+      "viewport-overflow": 1,
+      "low-legibility": 1,
+      "text-clipped": 1,
+      "target-too-small": 1,
+      "image-aspect-distortion": 1,
+      "tiny-text": 1,
+      "unstyled-default": 1
+    },
+    "by_severity": {
+      "blocker": 4,
+      "major": 3
+    }
+  },
+  "notes": [
+    "golden baseline reconstructed from a verified probe run"
+  ]
+}

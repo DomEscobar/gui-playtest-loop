@@ -9,13 +9,70 @@ from pathlib import Path
 from lib import ensure_placeholder_png, load_catalog, repo_root
 
 
-def _base_report(goal_id: str, checks: list[dict]) -> dict:
-    return {
+def _base_report(goal_id: str, checks: list[dict], ux_findings: list[dict] | None = None) -> dict:
+    report = {
         "goal_id": goal_id,
         "round": 1,
         "playtester_run_id": f"golden-{goal_id}",
         "checks": checks,
         "instrumented_findings": [],
+    }
+    if ux_findings:
+        report["ux_findings"] = ux_findings
+    return report
+
+
+def _measured(
+    finding_id: str,
+    rule: str,
+    severity: str,
+    metric: str,
+    actual: float,
+    threshold: float,
+    unit: str,
+    observation: str,
+    user_impact: str,
+    selector: str = "",
+) -> dict:
+    return {
+        "id": finding_id,
+        "layer": "measured",
+        "rule": rule,
+        "severity": severity,
+        "selector": selector,
+        "viewport": 1280,
+        "observation": observation,
+        "user_impact": user_impact,
+        "evidence": ["screenshots/placeholder.png"],
+        "measurement": {
+            "metric": metric,
+            "actual": actual,
+            "threshold": threshold,
+            "unit": unit,
+            "approximated": False,
+        },
+    }
+
+
+def _judged(
+    finding_id: str,
+    heuristic: str,
+    severity: str,
+    observation: str,
+    user_impact: str,
+    rationale: str,
+    confidence: str = "high",
+) -> dict:
+    return {
+        "id": finding_id,
+        "layer": "judged",
+        "heuristic": heuristic,
+        "severity": severity,
+        "observation": observation,
+        "user_impact": user_impact,
+        "rationale": rationale,
+        "confidence": confidence,
+        "evidence": ["screenshots/placeholder.png"],
     }
 
 
@@ -102,6 +159,72 @@ GOLDEN_REPORTS: dict[str, dict] = {
             _pass("start-begins-game"),
             _fail("card-flips-on-click", "Cards do not flip; clicks appear to hit an invisible overlay."),
         ],
+        [
+            _measured(
+                "ux-1", "occluded-interactive", "blocker", "hit_test", 0, 1, "boolean",
+                "Every card's centre point hit-tests to #click-shield rather than the card.",
+                "Cards cannot be clicked at all because a transparent overlay covers the board.",
+                "div.card:nth-of-type(1)",
+            ),
+        ],
+    ),
+    "landing-visual-defects": _base_report(
+        "landing-visual-defects",
+        [
+            _pass("cta-starts-trial"),
+            _pass("banner-dismisses"),
+            _pass("contact-responds"),
+        ],
+        [
+            _measured(
+                "ux-1", "viewport-overflow", "blocker", "horizontal_overflow", 312, 0, "px",
+                "The document scrolls 312px sideways at a 1280px viewport.",
+                "The page can be scrolled horizontally, cutting off the metrics strip.",
+            ),
+            _measured(
+                "ux-2", "low-legibility", "blocker", "contrast_ratio", 1.54, 4.5, "ratio",
+                "The hero subtitle renders at a 1.54:1 contrast ratio against white.",
+                "The subtitle is effectively invisible.",
+                "p.subtitle",
+            ),
+            _measured(
+                "ux-3", "text-clipped", "blocker", "overflow_x", 125, 0, "px",
+                "Card titles are cut off by overflow:hidden with no ellipsis.",
+                "Feature names read as 'Continuous depl' with no way to see the rest.",
+                "p.card-title",
+            ),
+            _measured(
+                "ux-4", "target-too-small", "blocker", "min_side", 14, 24, "px",
+                "The banner dismiss control measures 14x14px.",
+                "The dismiss button is hard to hit accurately.",
+                "#dismiss",
+            ),
+            _measured(
+                "ux-5", "image-aspect-distortion", "major", "aspect_drift", 200, 2, "percent",
+                "The logo's natural ratio is 1:1 but it renders at 240x80.",
+                "The logo appears stretched.",
+                "#logo",
+            ),
+            _measured(
+                "ux-6", "tiny-text", "major", "font_size", 9, 12, "px",
+                "Legal text renders at 9px.",
+                "The legal note is uncomfortable to read.",
+                "p.legal",
+            ),
+            _measured(
+                "ux-7", "unstyled-default", "major", "default_signals", 1, 0, "count",
+                "The Contact sales button still uses user-agent default chrome.",
+                "One control looks unfinished next to the styled primary action.",
+                "#contact",
+            ),
+            _judged(
+                "ux-8", "hierarchy-competing-emphasis", "minor",
+                "The stretched blue logo block occupies more visual weight than the headline.",
+                "Attention lands on a placeholder graphic instead of the value proposition.",
+                "The logo is the largest saturated area above the fold, so it wins the first fixation.",
+                "medium",
+            ),
+        ],
     ),
 }
 
@@ -132,6 +255,45 @@ REPAIRED_REPORTS: dict[str, dict] = {
 }
 
 
+def _probe_artifact(report: dict) -> dict:
+    """Rebuild the probe output the measured findings came from.
+
+    The validator requires a ux_probe artifact next to any measured finding, so
+    a golden round has to carry one. Values mirror a verified real run of
+    scripts/ux_probe.js against the fixture.
+    """
+    measured = [f for f in report.get("ux_findings", []) if f.get("layer") == "measured"]
+    by_rule: dict[str, int] = {}
+    by_severity: dict[str, int] = {}
+    findings = []
+    for finding in measured:
+        by_rule[finding["rule"]] = by_rule.get(finding["rule"], 0) + 1
+        by_severity[finding["severity"]] = by_severity.get(finding["severity"], 0) + 1
+        findings.append(
+            {
+                "rule": finding["rule"],
+                "severity": finding["severity"],
+                "selector": finding.get("selector", ""),
+                "detail": finding["observation"],
+                "measurement": finding["measurement"],
+                "occurrences": 1,
+            }
+        )
+    return {
+        "probe_version": "1.0.0",
+        "url": "http://127.0.0.1:8765/app.html",
+        "viewport": {"width": 1280, "height": 800, "device_pixel_ratio": 1},
+        "findings": findings,
+        "summary": {
+            "total": len(findings),
+            "reported": len(findings),
+            "by_rule": by_rule,
+            "by_severity": by_severity,
+        },
+        "notes": ["golden baseline reconstructed from a verified probe run"],
+    }
+
+
 def _write_round(root: Path, folder: str, report: dict) -> Path:
     round_dir = root / "benchmark" / "golden" / folder / "round-1"
     round_dir.mkdir(parents=True, exist_ok=True)
@@ -141,6 +303,15 @@ def _write_round(root: Path, folder: str, report: dict) -> Path:
         f"golden playtest for {folder}\nopen app\nobserve checks\n",
         encoding="utf-8",
     )
+
+    probe_path = round_dir / "ux_probe.1280.json"
+    if any(f.get("layer") == "measured" for f in report.get("ux_findings", [])):
+        probe_path.write_text(
+            json.dumps(_probe_artifact(report), indent=2) + "\n", encoding="utf-8"
+        )
+    elif probe_path.exists():
+        probe_path.unlink()
+
     return round_dir
 
 

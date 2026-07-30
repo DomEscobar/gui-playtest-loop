@@ -56,5 +56,10 @@
       "statement": "Reloading the page mid-game does not leave the UI in a broken or half-rendered state.",
       "required": false
     }
-  ]
+  ],
+  "ux_policy": {
+    "enabled": true,
+    "gate_on": ["blocker"],
+    "viewports": [320, 768, 1280]
+  }
 }

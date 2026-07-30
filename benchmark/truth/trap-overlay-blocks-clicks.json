@@ -6,5 +6,6 @@
   "split": "held-out",
   "must_fail": ["card-flips-on-click"],
   "must_pass": ["start-begins-game"],
-  "mutation": "Invisible #click-shield overlay intercepts pointer events; card handlers exist but never fire."
+  "must_flag_ux": ["occluded-interactive"],
+  "mutation": "Invisible #click-shield overlay intercepts pointer events; card handlers exist but never fire. The visual probe catches this independently as an occlusion."
 }

@@ -21,7 +21,8 @@ playtest-runs/<goal-id>/
 │   │   ├── report.json          frozen verdict for this round
 │   │   ├── action.log           one line per interaction
 │   │   ├── screenshots/
-│   │   └── instrumentation/     archived patches, only if phase 4 used temp logs
+│   │   ├── ux_probe.<width>.json  raw probe output, one per reviewed viewport
+│   │   └── instrumentation/     archived patches, only if diagnosis used temp logs
 │   └── round-2/ ...
 └── final_report.md              written once the loop stops
 ```
@@ -65,9 +66,19 @@ playtester and builder may read it but never edit it.
       "statement": "Restart resets the board, the score, and any in-progress selection.",
       "required": true
     }
-  ]
+  ],
+  "ux_policy": {
+    "enabled": true,
+    "gate_on": ["blocker"],
+    "viewports": [320, 768, 1280]
+  }
 }
 ```
+
+`ux_policy` is optional; the values above are the defaults applied when it is
+absent. `gate_on` accepts only measured severities — judged findings never
+gate, whatever it says. Set `gate_on: []` when the visual layer is explicitly
+out of scope for this goal. See [ux-review.md](ux-review.md).
 
 Rules for writing checks, taken from what makes a rubric usable:
 
@@ -83,7 +94,8 @@ Rules for writing checks, taken from what makes a rubric usable:
 
 ## `report.json`
 
-Written by the playtester at the end of phase 3 (the verdict gate), before
+Written by the playtester in two frozen passes — `checks` at the end of the
+behavior playtest, `ux_findings` at the end of the visual review — both before
 any code, console, or instrumentation is read.
 
 ```json
@@ -109,6 +121,40 @@ any code, console, or instrumentation is read.
       "user_facing_bug": "Wrong memory-game pairs never flip back, so the board fills up with revealed cards."
     }
   ],
+  "ux_findings": [
+    {
+      "id": "ux-1",
+      "layer": "measured",
+      "rule": "low-legibility",
+      "severity": "major",
+      "surface": "board header",
+      "selector": "#score",
+      "viewport": 1280,
+      "observation": "Score text renders at a 3.4:1 contrast ratio against the board background.",
+      "user_impact": "The score is hard to read at a glance while playing.",
+      "evidence": ["screenshots/ux_1280_board.png"],
+      "measurement": {
+        "metric": "contrast_ratio",
+        "actual": 3.4,
+        "threshold": 4.5,
+        "unit": "ratio",
+        "approximated": false
+      }
+    },
+    {
+      "id": "ux-2",
+      "layer": "judged",
+      "heuristic": "feedback-missing",
+      "severity": "major",
+      "surface": "board",
+      "observation": "Matching a pair changes only the score number; the matched cards look identical to unmatched ones.",
+      "user_impact": "Players cannot tell which pairs they have already cleared.",
+      "rationale": "The only acknowledgement of a match is a digit change outside the area the player is looking at.",
+      "confidence": "high",
+      "evidence": ["screenshots/ux_match_no_feedback.png"],
+      "proposed_check": "A matched pair is visually distinct from unmatched cards."
+    }
+  ],
   "instrumented_findings": [
     {
       "id": "find-1",
@@ -129,8 +175,14 @@ Field rules:
 - Every `pass` **must** reference at least one evidence artifact that exists
   on disk under this round's folder.
 - Every `fail` **must** include `repro` steps and at least one artifact.
+- `ux_findings` is separate from `checks` and follows the two-layer contract
+  in [ux-review.md](ux-review.md). A `measured` finding needs a `rule` and a
+  `measurement` with numeric `actual` and `threshold`, and the round folder
+  must contain the `ux_probe.<width>.json` it came from. A `judged` finding
+  needs a named `heuristic`, a `rationale`, and a `confidence`, and may never
+  be `blocker` — a judgment call cannot fail a goal.
 - `instrumented_findings` is separate from `checks`. It holds things only
-  visible through diagnosis (phase 4), not through the rendered surface. If a
+  visible through diagnosis, not through the rendered surface. If a
   finding was only visible in a log, either link it to an existing check via
   `visible_symptom`, or set `proposed_check` to a candidate observable
   statement for the orchestrator to consider adding to `goal.json` in a
@@ -163,9 +215,32 @@ fail packet, not the full report and not the full conversation:
       "evidence": ["evidence/round-1/screenshots/03_mismatch_still_visible.png"],
       "likely_location": "src/components/MemoryBoard.tsx (from diagnosis phase, advisory only)"
     }
+  ],
+  "gating_ux_findings": [
+    {
+      "id": "ux-3",
+      "rule": "occluded-interactive",
+      "severity": "blocker",
+      "user_impact": "The Start button cannot be clicked because a transparent overlay covers it.",
+      "measurement": { "metric": "hit_test", "actual": 0, "threshold": 1, "unit": "boolean" },
+      "evidence": ["evidence/round-1/screenshots/ux_1280_initial.png"]
+    }
+  ],
+  "advisory_ux_findings": [
+    {
+      "id": "ux-2",
+      "heuristic": "feedback-missing",
+      "user_impact": "Players cannot tell which pairs they have already cleared.",
+      "confidence": "high"
+    }
   ]
 }
 ```
+
+`gating_ux_findings` carries only measured findings whose severity appears in
+`ux_policy.gate_on`; the builder must clear those. `advisory_ux_findings` is
+context the builder may act on or ignore — it never blocks the loop, and the
+builder is not asked to justify skipping it.
 
 The builder treats `likely_location` as advice, not instruction, and decides
 how to fix it. The builder never receives the passing checks' evidence — it

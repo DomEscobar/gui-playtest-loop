@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nimbus — Ship faster</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      color: #1a1a1a;
+      background: #ffffff;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+    h1 { font-size: 2.5rem; margin: 0 0 0.5rem; }
+
+    /* MUTATION low-legibility: subtitle sits at ~1.9:1 against white */
+    .subtitle { color: #d0d0d0; font-size: 1.125rem; margin: 0 0 1.5rem; }
+
+    .cta { background: #2563eb; color: #fff; border: 0; border-radius: 6px; padding: 0.75rem 1.5rem; font-size: 1rem; cursor: pointer; }
+
+    /* MUTATION target-too-small: dismiss control is 14x14 */
+    .banner { display: flex; align-items: center; gap: 0.75rem; background: #eef2ff; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1.5rem; }
+    .banner-dismiss { width: 14px; height: 14px; padding: 0; border: 0; background: #6366f1; color: #fff; border-radius: 3px; font-size: 9px; line-height: 14px; cursor: pointer; }
+
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; }
+
+    /* MUTATION text-clipped: title is cut off with no ellipsis and no scroll */
+    .card-title { font-weight: 600; white-space: nowrap; overflow: hidden; width: 120px; margin: 0 0 0.5rem; }
+
+    /* MUTATION viewport-overflow: fixed-width strip forces sideways scroll */
+    .metrics-strip { width: 1400px; background: #f8fafc; border-radius: 8px; padding: 1rem; display: flex; gap: 2rem; }
+
+    /* MUTATION image-aspect-distortion: 100x100 source painted at 240x80 */
+    .logo { width: 240px; height: 80px; }
+
+    /* MUTATION tiny-text: legal note at 9px */
+    .legal { font-size: 9px; color: #6b7280; margin-top: 2rem; }
+
+    footer { border-top: 1px solid #e5e7eb; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="banner">
+      <span>New: Nimbus v3 is available.</span>
+      <button class="banner-dismiss" id="dismiss" type="button" aria-label="Dismiss">x</button>
+    </div>
+
+    <img class="logo" id="logo" alt="Nimbus"
+         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%232563eb'/%3E%3C/svg%3E" />
+
+    <h1>Ship faster with Nimbus</h1>
+    <p class="subtitle">The deployment platform teams actually keep using.</p>
+    <button class="cta" id="cta" type="button">Start free</button>
+
+    <div class="cards">
+      <div class="card">
+        <p class="card-title">Continuous deployment pipelines</p>
+        <p>Push to main and Nimbus handles the rest.</p>
+      </div>
+      <div class="card">
+        <p class="card-title">Observability included</p>
+        <p>Traces, logs, and metrics in one place.</p>
+      </div>
+      <div class="card">
+        <p class="card-title">Rollbacks in one click</p>
+        <p>Every deploy is reversible.</p>
+      </div>
+    </div>
+
+    <div class="metrics-strip">
+      <div><strong>99.99%</strong><br />uptime</div>
+      <div><strong>120ms</strong><br />p95 latency</div>
+      <div><strong>4.2s</strong><br />median deploy</div>
+    </div>
+
+    <footer>
+      <!-- MUTATION unstyled-default: bare browser-default button -->
+      <button id="contact" type="button">Contact sales</button>
+      <p class="legal">Nimbus is a demonstration fixture. No real service is described here.</p>
+    </footer>
+  </div>
+
+  <script>
+    const status = document.createElement('p');
+    status.id = 'status';
+    document.querySelector('.wrap').appendChild(status);
+
+    document.getElementById('cta').addEventListener('click', () => {
+      status.textContent = 'Trial started.';
+    });
+    document.getElementById('dismiss').addEventListener('click', () => {
+      document.querySelector('.banner').remove();
+    });
+    document.getElementById('contact').addEventListener('click', () => {
+      status.textContent = 'Sales contacted.';
+    });
+  </script>
+</body>
+</html>

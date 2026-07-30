@@ -1,0 +1,19 @@
+{
+  "fixture_id": "landing-visual-defects",
+  "base_app": "landing-page",
+  "archetype": "visual-defects",
+  "class": "injected",
+  "split": "held-out",
+  "must_fail": [],
+  "must_pass": ["cta-starts-trial", "banner-dismisses", "contact-responds"],
+  "must_flag_ux": [
+    "viewport-overflow",
+    "text-clipped",
+    "low-legibility",
+    "target-too-small",
+    "image-aspect-distortion",
+    "tiny-text",
+    "unstyled-default"
+  ],
+  "mutation": "Behavior is intact; the surface carries seven measurable visual defects (invisible subtitle, clipped card titles, sideways scroll at 1280, 14px dismiss target, stretched logo, 9px legal text, unstyled default button)."
+}

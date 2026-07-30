@@ -50,9 +50,11 @@ that option.
    +-----------------------------------+
    | PLAYTESTER  (fresh each round)     |
    |   phases 1-3: observe, act, log    |
-   |   >>> VERDICT FROZEN <<<           |
-   |   phase 4: diagnose (code allowed) |
-   |   phase 5: memory capture          |
+   |   >>> BEHAVIOR VERDICT FROZEN <<<  |
+   |   phase 4: visual/UX review (probe)|
+   |   >>> UX VERDICT FROZEN <<<        |
+   |   phase 5: diagnose (code allowed) |
+   |   phase 6: memory capture          |
    +----------------+------------------+
                     |  evidence/round-N/report.json
                     v
@@ -100,6 +102,32 @@ actually visible on screen.
 - Any temporary logging added during diagnosis is marked, archived, reverted,
   and re-verified with a clean rerun before a finding counts as confirmed.
   See [`reference/instrumentation.md`](reference/instrumentation.md).
+
+## Visual and UX review
+
+The playtester does not stop at "does it work." After the behavior verdict is
+frozen, it reviews the rendered surface in two layers:
+
+- **Measured** — [`scripts/ux_probe.js`](scripts/ux_probe.js) reads layout and
+  computed style at each policy viewport and returns numbers: contrast ratios,
+  clipped text, sideways scroll, controls covered by an invisible overlay,
+  stretched images, off-scale spacing, palette and type-scale sprawl. Read-only,
+  so it runs before the diagnosis gate. Severity comes from the numbers, not
+  from the reviewer.
+- **Judged** — the reviewer's own reading of hierarchy, affordance, feedback,
+  missing states, consistency, copy, density, and rhythm. Every judged finding
+  must name one of a fixed set of heuristics and carry an observation, a user
+  impact, a rationale, and an honest confidence.
+
+**A judged finding can never fail a goal.** Only measured findings gate, and
+only at the severities named in `ux_policy.gate_on`. Without that asymmetry,
+"I don't love the spacing" becomes a blocking verdict and the loop stops being
+falsifiable. Details in [`reference/ux-review.md`](reference/ux-review.md).
+
+Generation-side design skills score their own intent before emitting. This
+track measures what the browser actually painted, which is a different
+question — a declared 8pt scale means nothing if the rendered gaps are 13px
+and 19px.
 
 ## Install
 
@@ -150,8 +178,10 @@ playtest actually covers.
 
 ## What this is not
 
-- Not a full accessibility audit.
-- Not a proof that an experience feels good — that's still a human's job.
+- Not an accessibility audit — the visual track covers craft and ergonomics
+  and makes no compliance claim.
+- Not a proof that an experience feels good — the judged layer is one
+  reviewer's opinion, labelled as such, and cannot fail a goal.
 - Not a security review.
 - Not perfect: the published study behind this design found GUI playtester
   verdicts agree with blind human annotators on about **84% of criteria**.
@@ -178,10 +208,10 @@ python benchmark/harness/run_benchmark.py --source golden
 ```text
 SKILL.md              the skill itself — start here
 AGENTS.md             pointer for agents that auto-discover this file
-reference/            contract, checklist, memory, instrumentation, portability
+reference/            contract, checklist, ux-review, memory, instrumentation, portability
 prompts/              role prompts for builder / playtester / repair
 templates/            goal.json and report.json examples + schema
-scripts/              validate_evidence.py — the one deterministic gate
+scripts/              validate_evidence.py + ux_probe.js — the deterministic gates
 benchmark/            detection + autofix harness (see benchmark/README.md)
 install/              install.sh / install.ps1 for Cursor personal skills
 docs/                 research basis and citations

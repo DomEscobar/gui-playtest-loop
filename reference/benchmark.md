@@ -8,7 +8,7 @@ evaluation.
 
 | Tier | Question | Fixtures |
 |------|----------|----------|
-| **Tier 1 — Detection** | Did the playtester find the injected bug? | All `tier1: true` entries in `catalog.json` |
+| **Tier 1 — Detection** | Did the playtester find the injected behavior bug and the measured visual defects? | All `tier1: true` entries in `catalog.json` |
 | **Tier 2 — Autofix** | After a fail packet, can repair + re-playtest complete the goal? | Entries with `tier2_autofix: true` |
 
 ## Layout
@@ -76,6 +76,17 @@ python -m unittest discover -s benchmark/harness/tests -v
 - **`primary_fail` + `cascade_fail_if_primary`** — when the primary check fails, dependent checks count as expected failures even if the playtester marks them `blocked`.
 
 Detection recall/precision are computed over expected vs reported failures.
+
+The visual track is scored separately:
+
+- **`must_flag_ux`** — probe rule ids the report must carry as **measured**
+  findings. A judged finding with the same name does not count; opinion cannot
+  earn a benchmark point.
+- **`forbid_ux_findings`** — set on control fixtures. Any measured finding is
+  a false positive and fails the fixture. This is what keeps the probe from
+  being tuned for recall at the cost of noise.
+
+`ux_recall` is the share of `must_flag_ux` rules actually reported.
 
 Tier 2 success is separate: after applying a repair manifest, all **required** checks in `goal.json` must be `pass` in the post-fix report.
 

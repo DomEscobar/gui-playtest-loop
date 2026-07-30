@@ -6,5 +6,7 @@
   "split": "train",
   "must_fail": [],
   "must_pass": ["initial-state-hidden", "start-begins-game", "card-flips-on-click", "mismatch-flips-back"],
-  "mutation": "None — fully working reference implementation."
+  "must_flag_ux": [],
+  "forbid_ux_findings": true,
+  "mutation": "None — fully working reference implementation, and the probe must stay silent on it."
 }

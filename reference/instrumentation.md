@@ -1,8 +1,13 @@
 # Instrumentation Contract
 
-Phase 4 (diagnosis, after the verdict is frozen) may use temporary logging to
-explain a failure that has no visible symptom on screen. This is powerful and
-easy to misuse, so it runs under a strict contract.
+The diagnosis phase, which runs after both the behavior and UX verdicts are
+frozen, may use temporary logging to explain a failure that has no visible
+symptom on screen. This is powerful and easy to misuse, so it runs under a
+strict contract.
+
+Note the contrast with `scripts/ux_probe.js`: that probe only reads layout and
+computed style, changes nothing, and therefore runs *before* the gate. Anything
+that mutates the page or the source is instrumentation and stays behind it.
 
 ## The rule that governs everything here
 
@@ -39,7 +44,7 @@ instrumentation, and belongs to the Builder/Repair role instead.
 ## Workflow
 
 ```text
-[4] diagnosis
+diagnosis
      |
      +-- capture baseline        git diff > evidence/round-N/instrumentation/pre.patch
      |
@@ -56,7 +61,7 @@ instrumentation, and belongs to the Builder/Repair role instead.
      +-- CLEAN RERUN              reproduce the same failure with no
      |                           instrumentation present
      v
-[5] memory capture
+memory capture
 ```
 
 ## Why the clean rerun is mandatory, not optional
