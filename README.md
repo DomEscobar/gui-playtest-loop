@@ -7,7 +7,7 @@ until a goal is actually met — or stop and say so.
 Works with Cursor, Claude Code, Codex, or any agent that can read a Markdown
 skill file and drive a browser (Playwright MCP, Chrome DevTools MCP, or
 equivalent). No vendor lock-in, no required subscription, one stdlib-only
-Python script as the only piece of code.
+Python toolchain plus one read-only browser probe.
 
 ## The problem
 
@@ -84,8 +84,28 @@ that option.
                                             (round += 1, check budget)
 ```
 
-Full detail, including the five playtester phases and every design invariant,
+Full detail, including profile selection, role boundaries, and every design invariant,
 is in [`SKILL.md`](SKILL.md).
+
+## Rigor profiles
+
+- **Quick** — required behavior checks and explicit viewports; default 2 repair rounds.
+- **Standard** — sealed live evidence, structured phase/action timestamps, complete
+  viewport probes, breakpoint-edge checks, and regression gating; default 5 rounds.
+- **Release** — Standard plus externally protected contracts, an isolated blinded
+  playtester, repeated runs where flakiness matters, and an external final gate.
+
+Profiles are frozen before round 1 and never downgraded after a failure appears.
+See [`reference/profiles.md`](reference/profiles.md).
+
+## Protected evidence
+
+Version-2 goals can hash-protect `goal.json`, schemas, validators, and probe code
+outside Builder write authority. Each strict round also seals its action log,
+screenshots, and probe files in `evidence_manifest.json`. Origins are explicit:
+`live-agent`, `human-live`, `replayed`, or `synthetic-golden`. Golden fixtures prove
+the harness, not agent detection quality. See
+[`reference/evidence-integrity.md`](reference/evidence-integrity.md).
 
 ## Why the verdict is frozen before diagnosis
 
@@ -165,10 +185,20 @@ role prompts in [`prompts/`](prompts/). After each playtest round, run the
 validator by hand or let the agent run it:
 
 ```bash
+python scripts/seal_evidence.py \
+  --round-dir playtest-runs/<goal-id>/evidence/round-1 \
+  --origin live-agent
+```
+
+```bash
 python scripts/validate_evidence.py \
   --round-dir playtest-runs/<goal-id>/evidence/round-1 \
   --goal playtest-runs/<goal-id>/goal.json \
   --app-dir <path-to-your-app-source>
+
+python scripts/evaluate_gate.py \
+  --goal playtest-runs/<goal-id>/goal.json \
+  --report playtest-runs/<goal-id>/evidence/round-1/report.json
 ```
 
 Exit code `0` means the evidence package is structurally complete — not that
@@ -198,6 +228,13 @@ playtester actually detects injected UI bugs and (on a subset) whether the
 repair loop completes the goal. See [`benchmark/README.md`](benchmark/README.md)
 and [`reference/benchmark.md`](reference/benchmark.md).
 
+**Interpretation matters:** `--source golden` is a synthetic harness baseline.
+Its reports are generated from known expectations and use placeholder artifacts;
+it validates schemas/scoring but is not an agent-effectiveness result. Only
+blinded reports declaring `evidence_origin: live-agent` belong in live recall and
+precision claims. The current Tier-2 helper applies predefined repair manifests;
+it is scaffolding for a future autonomous repair evaluation, not one today.
+
 ```bash
 python benchmark/harness/seed_golden.py
 python benchmark/harness/run_benchmark.py --source golden
@@ -208,10 +245,11 @@ python benchmark/harness/run_benchmark.py --source golden
 ```text
 SKILL.md              the skill itself — start here
 AGENTS.md             pointer for agents that auto-discover this file
+skills/               focused behavior, rendered-UX, and repair sub-skills
 reference/            contract, checklist, ux-review, memory, instrumentation, portability
 prompts/              role prompts for builder / playtester / repair
 templates/            goal.json and report.json examples + schema
-scripts/              validate_evidence.py + ux_probe.js — the deterministic gates
+scripts/              validation, contract/evidence sealing, and rendered UX probe
 benchmark/            detection + autofix harness (see benchmark/README.md)
 install/              install.sh / install.ps1 for Cursor personal skills
 docs/                 research basis and citations

@@ -61,11 +61,16 @@ Work through these categories for any nontrivial interactive surface:
 11. **Feedback** — Silent failure is the worst category: the action did not
     happen, but nothing indicates that.
 12. **Viewport and keyboard** — Narrow width, resizing mid-flow, tab order,
-    Enter to submit, Escape to close, focus trapped correctly inside a
-    modal.
+   Enter to submit, Escape to close, focus trapped correctly inside a
+   modal.
 13. **Runtime hygiene** — Uncaught exceptions in the console, failed
-    requests, 404s on assets, obvious jank, a heap that keeps growing across
-    repeated identical actions.
+   requests, 404s on assets, obvious jank, a heap that keeps growing across
+   repeated identical actions.
+14. **Breakpoint edges** — For every declared breakpoint, test one pixel
+    below, exactly at, and one pixel above it. Discontinuities often hide
+    between conventional mobile/tablet/desktop samples.
+15. **Repair regression** — After a fix, rerun the complete frozen goal and
+    require every previously passing required check to remain passing.
 
 ## Severity classification
 

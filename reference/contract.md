@@ -11,6 +11,7 @@ Each goal gets its own run folder. Round folders never get overwritten.
 ```text
 playtest-runs/<goal-id>/
 ├── goal.json                    frozen after step 1, never edited after
+├── integrity.json               protected manifest; keep outside Builder write authority
 ├── APP_GUIDE.md                 how to start the app, seed data, known assumptions
 ├── memory/
 │   ├── world.md                 routes, auth, seed data, domain rules (shared)
@@ -19,6 +20,7 @@ playtest-runs/<goal-id>/
 ├── evidence/
 │   ├── round-1/
 │   │   ├── report.json          frozen verdict for this round
+│   │   ├── evidence_manifest.json hashes + evidence origin
 │   │   ├── action.log           one line per interaction
 │   │   ├── screenshots/
 │   │   ├── ux_probe.<width>.json  raw probe output, one per reviewed viewport
@@ -34,8 +36,10 @@ playtester and builder may read it but never edit it.
 
 ```json
 {
+  "contract_version": 2,
   "goal_id": "memory-game-playable",
   "source_prompt": "the memory game should be fully playable",
+  "profile": "standard",
   "app": {
     "start_command": "bun run dev",
     "url": "http://localhost:5173"
@@ -70,15 +74,29 @@ playtester and builder may read it but never edit it.
   "ux_policy": {
     "enabled": true,
     "gate_on": ["blocker"],
+    "gate_rules": ["low-legibility", "text-clipped", "occluded-interactive", "viewport-overflow"],
     "viewports": [320, 768, 1280]
+  },
+  "responsive_policy": {
+    "breakpoints": [768],
+    "probe_breakpoint_edges": true
+  },
+  "protection": {
+    "integrity_required": true
   }
 }
 ```
 
-`ux_policy` is optional; the values above are the defaults applied when it is
-absent. `gate_on` accepts only measured severities — judged findings never
-gate, whatever it says. Set `gate_on: []` when the visual layer is explicitly
-out of scope for this goal. See [ux-review.md](ux-review.md).
+Version 2 activates strict validation for `standard` and `release`: structured
+phase/action timestamps, evidence origin and hashes, complete viewport probes,
+contract integrity when required, and full regression checks after repairs. See
+[profiles.md](profiles.md) and [evidence-integrity.md](evidence-integrity.md).
+
+`ux_policy` is optional for legacy contracts. `gate_on` selects measured
+severities and `gate_rules` selects the rule ids allowed to gate. Judged findings
+never gate. Style-system conventions such as palette or radius counts stay
+advisory unless a protected project policy explicitly names them. Set
+`gate_on: []` when the visual layer is out of scope. See [ux-review.md](ux-review.md).
 
 Rules for writing checks, taken from what makes a rubric usable:
 
@@ -87,8 +105,8 @@ Rules for writing checks, taken from what makes a rubric usable:
   difficulty feels right" is not.
 - **Faithful**: derive the check from the user's stated intent, not from
   personal preference or from a constant found while reading the code.
-- **9-15 checks** is a reasonable range for a non-trivial interactive
-  artifact. Fewer than 5 usually means the goal was not decomposed enough.
+- Use the smallest set that covers the user's observable intent. A non-trivial
+  flow often needs 5-15 checks, but check count is not a quality metric.
 - Mark a check `required: false` for things worth observing but that should
   not block the loop (for example, a nice-to-have animation).
 
@@ -103,12 +121,18 @@ any code, console, or instrumentation is read.
   "goal_id": "memory-game-playable",
   "round": 1,
   "playtester_run_id": "run-1-a1b2c3",
+  "evidence_origin": "live-agent",
+  "phase_timestamps": {
+    "behavior_verdict_frozen_at": "2026-08-01T12:00:00Z",
+    "ux_verdict_frozen_at": "2026-08-01T12:05:00Z",
+    "diagnosis_started_at": "2026-08-01T12:06:00Z"
+  },
   "checks": [
     {
       "id": "mismatch-flips-back",
       "status": "fail",
       "evidence": [
-        "evidence/round-1/screenshots/03_mismatch_still_visible.png"
+        "screenshots/03_mismatch_still_visible.png"
       ],
       "action_log_lines": [12, 13, 14],
       "repro": [
@@ -172,6 +196,11 @@ Field rules:
 
 - `status` is one of `pass`, `fail`, or `blocked` (blocked means the
   precondition for the check never occurred, e.g. the game never started).
+- `evidence_origin` distinguishes `live-agent`, `human-live`, `replayed`, and
+  `synthetic-golden`. Strict agent runs require `live-agent`; golden fixtures
+  test the harness and never count as live detection results.
+- Strict profiles use JSONL action rows with `sequence`, timezone-aware
+  `timestamp`, `action`, optional `target`, and `observation`.
 - Every `pass` **must** reference at least one evidence artifact that exists
   on disk under this round's folder.
 - Every `fail` **must** include `repro` steps and at least one artifact.
@@ -191,6 +220,11 @@ Field rules:
 - `clean_rerun_reproduced` must be `true` before an instrumented finding is
   treated as a confirmed bug. See
   [instrumentation.md](instrumentation.md).
+- After round 1, `regression.previous_passes_rechecked` must exactly cover the
+  previous round's passing required checks. Any pass-to-fail or pass-to-blocked
+  transition remains a gated regression.
+- Run `scripts/seal_evidence.py` after the report is final. Strict validation
+  rejects changed, missing, escaping, or unsealed evidence paths.
 
 See [templates/report.schema.json](../templates/report.schema.json) for the
 machine-checkable version and

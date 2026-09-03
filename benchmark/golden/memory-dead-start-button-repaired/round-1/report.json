@@ -2,6 +2,7 @@
   "goal_id": "memory-dead-start-button",
   "round": 1,
   "playtester_run_id": "golden-memory-dead-start-button",
+  "evidence_origin": "synthetic-golden",
   "checks": [
     {
       "id": "initial-state-hidden",

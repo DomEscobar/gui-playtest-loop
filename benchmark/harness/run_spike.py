@@ -68,6 +68,30 @@ def main() -> int:
         return 1
 
     manifest["steps"]["report"] = "present"
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        print(f"Invalid report JSON: {exc}", file=sys.stderr)
+        return 1
+    if report.get("evidence_origin") != "live-agent":
+        manifest["steps"]["origin"] = {
+            "expected": "live-agent",
+            "actual": report.get("evidence_origin"),
+        }
+        (results_dir / "manifest.json").write_text(
+            json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+        )
+        print("Live spike requires report evidence_origin='live-agent'", file=sys.stderr)
+        return 1
+    if not (round_dir / "evidence_manifest.json").is_file():
+        manifest["steps"]["evidence_manifest"] = "missing"
+        (results_dir / "manifest.json").write_text(
+            json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+        )
+        print("Live spike requires evidence_manifest.json", file=sys.stderr)
+        return 1
+    manifest["steps"]["origin"] = "live-agent"
+    manifest["steps"]["evidence_manifest"] = "present"
 
     if not args.skip_validate:
         validate_cmd = [
@@ -79,6 +103,7 @@ def main() -> int:
             str(goal_path),
             "--app-dir",
             str(fixture_dir),
+            "--require-strict",
         ]
         proc = subprocess.run(validate_cmd, capture_output=True, text=True)
         manifest["steps"]["validate"] = {

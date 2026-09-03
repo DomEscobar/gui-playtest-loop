@@ -2,6 +2,7 @@
   "goal_id": "landing-visual-defects",
   "round": 1,
   "playtester_run_id": "golden-landing-visual-defects",
+  "evidence_origin": "synthetic-golden",
   "checks": [
     {
       "id": "cta-starts-trial",

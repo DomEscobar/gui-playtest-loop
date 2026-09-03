@@ -2,6 +2,7 @@
   "goal_id": "memory-mismatch-stays-visible",
   "round": 1,
   "playtester_run_id": "golden-memory-mismatch-stays-visible",
+  "evidence_origin": "synthetic-golden",
   "checks": [
     {
       "id": "start-begins-game",

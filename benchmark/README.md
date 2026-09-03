@@ -5,7 +5,7 @@ without letting the agent see ground truth.
 
 Full reference: [`../reference/benchmark.md`](../reference/benchmark.md)
 
-## Quick start
+## Quick start: harness baseline
 
 ```bash
 python benchmark/harness/seed_golden.py
@@ -13,11 +13,16 @@ python benchmark/harness/run_benchmark.py --source golden
 python -m unittest discover -s benchmark/harness/tests -v
 ```
 
+This command scores **synthetic-golden** reports generated from known expected
+outcomes. It proves validator/scorer behavior and regression safety. It does not
+measure whether an agent discovers unseen bugs. Live effectiveness claims require
+a blinded run whose report declares `evidence_origin: live-agent`.
+
 ## Layout
 
 ```text
 benchmark/
-├── catalog.json           fixture registry (6 fixtures: 1 control, 4 injected, 1 trap)
+├── catalog.json           fixture registry (7 fixtures: 1 control, 5 injected, 1 trap)
 ├── fixtures/<id>/         agent-visible: app.html + goal.json
 ├── truth/<id>.json        ground truth — NEVER put in agent workspace
 ├── golden/<id>/           reference reports for CI
@@ -25,6 +30,10 @@ benchmark/
 ├── runs/<id>/             live playtest evidence
 └── results/<ts>/          scored output + manifest
 ```
+
+Every regenerated golden round declares `synthetic-golden` and includes a
+deterministic `evidence_manifest.json`; changing a placeholder, log, or probe
+therefore invalidates validation until the baseline is deliberately reseeded.
 
 ## Fixtures (v1)
 
@@ -64,7 +73,7 @@ Restart button as unreadable. That run is why the probe now skips deliberately
 hidden text and disabled controls, and why `forbid_ux_findings` exists as a
 scored property rather than a comment.
 
-## Spike result (memory-dead-start-button)
+## Legacy spike result (memory-dead-start-button)
 
 **Result:** PASS — detection recall 1.00, precision 1.00
 
@@ -72,10 +81,14 @@ Pipeline verified end-to-end:
 
 1. `serve.py` serves fixture at `http://127.0.0.1:8765/app.html`
 2. Playtester observes Start does nothing, cards stay hidden
-3. `validate_evidence.py` accepts the evidence package
+3. The original run claimed validator acceptance
 4. `score.py` matches report against truth manifest
 
 Results: `benchmark/results/20260730T110741Z/`
+
+The currently committed legacy round references screenshots that are not present,
+so the current validator correctly rejects that evidence package. Keep its score as
+historical pipeline scaffolding, not as a valid live result.
 
 ## Run a spike manually
 

@@ -27,17 +27,26 @@ benchmark/
 
 ## Commands
 
-Seed golden evidence (CI baseline):
+Seed synthetic golden evidence (CI harness baseline):
 
 ```bash
 python benchmark/harness/seed_golden.py
 ```
 
-Tier 1 — score all fixtures against golden reports:
+Harness baseline — score all fixtures against generated golden reports:
 
 ```bash
 python benchmark/harness/run_benchmark.py --source golden
 ```
+
+Golden reports declare `evidence_origin: synthetic-golden`. They are built from
+known expectations and use placeholder screenshots, so their recall/precision
+describe scorer consistency, not agent effectiveness. Never publish them as live
+Tier-1 results.
+
+Live Tier 1 uses `--source runs` and accepts only reports declaring
+`evidence_origin: live-agent`. The evaluated workspace must exclude `truth/` and
+`golden/` and the playtester must not inherit Builder conversation.
 
 Single spike (manual playtest → score):
 
@@ -88,14 +97,19 @@ The visual track is scored separately:
 
 `ux_recall` is the share of `must_flag_ux` rules actually reported.
 
-Tier 2 success is separate: after applying a repair manifest, all **required** checks in `goal.json` must be `pass` in the post-fix report.
+The current Tier-2 helper is deterministic scaffolding: it applies a predefined
+repair manifest and reads a predefined repaired golden report. It tests harness
+plumbing, not autonomous diagnosis or repair. A real Tier-2 result must run an
+unseen repair agent and a fresh sealed playtester round.
 
 ## Anti-cheat
 
 1. Never place `benchmark/truth/` or `benchmark/golden/` in the agent workspace during live evaluation.
 2. Playtester writes `report.json` from rendered behavior before reading source.
 3. `validate_evidence.py` enforces artifact existence; it does not judge correctness.
-4. Instrumentation findings cannot upgrade a pass — see `reference/instrumentation.md`.
+4. Live runners require `evidence_origin: live-agent`, structured timestamps,
+   complete viewport probes, and a matching evidence manifest.
+5. Instrumentation findings cannot upgrade a pass — see `reference/instrumentation.md`.
 
 ## Fixture classes
 
