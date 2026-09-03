@@ -20,7 +20,7 @@ $repoRoot = Split-Path -Parent $scriptDir
 
 New-Item -ItemType Directory -Force -Path $Destination | Out-Null
 
-$items = @("SKILL.md", "AGENTS.md", "reference", "prompts", "templates", "scripts", "docs", "LICENSE", "README.md")
+$items = @("SKILL.md", "AGENTS.md", "skills", "reference", "prompts", "templates", "scripts", "docs", "LICENSE", "README.md")
 
 foreach ($item in $items) {
     $source = Join-Path $repoRoot $item

@@ -4,9 +4,14 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 from lib import ensure_placeholder_png, load_catalog, repo_root
+
+ROOT = repo_root()
+sys.path.insert(0, str(ROOT / "scripts"))
+from seal_evidence import create_evidence_manifest  # noqa: E402
 
 
 def _base_report(goal_id: str, checks: list[dict], ux_findings: list[dict] | None = None) -> dict:
@@ -14,6 +19,7 @@ def _base_report(goal_id: str, checks: list[dict], ux_findings: list[dict] | Non
         "goal_id": goal_id,
         "round": 1,
         "playtester_run_id": f"golden-{goal_id}",
+        "evidence_origin": "synthetic-golden",
         "checks": checks,
         "instrumented_findings": [],
     }
@@ -312,6 +318,13 @@ def _write_round(root: Path, folder: str, report: dict) -> Path:
     elif probe_path.exists():
         probe_path.unlink()
 
+    manifest = create_evidence_manifest(
+        round_dir, "synthetic-golden", include_timestamp=False
+    )
+    (round_dir / "evidence_manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
+
     return round_dir
 
 
@@ -327,7 +340,7 @@ def write_golden(root: Path) -> list[Path]:
 
 
 def main() -> int:
-    root = repo_root()
+    root = ROOT
     paths = write_golden(root)
     print(f"Wrote {len(paths)} golden round folders under benchmark/golden/")
     return 0

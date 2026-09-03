@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "origin": "synthetic-golden",
+  "files": [
+    {
+      "path": "action.log",
+      "sha256": "sha256:4eefdef5cb8c7ebe12f943d7324ca9713b0f043100f75ecb81aa4dc360e28165"
+    },
+    {
+      "path": "screenshots/placeholder.png",
+      "sha256": "sha256:c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77"
+    }
+  ]
+}

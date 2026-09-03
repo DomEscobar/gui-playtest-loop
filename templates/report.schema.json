@@ -8,6 +8,38 @@
     "goal_id": { "type": "string", "minLength": 1 },
     "round": { "type": "integer", "minimum": 1 },
     "playtester_run_id": { "type": "string", "minLength": 1 },
+    "evidence_origin": {
+      "type": "string",
+      "enum": ["live-agent", "human-live", "replayed", "synthetic-golden"]
+    },
+    "phase_timestamps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["behavior_verdict_frozen_at"],
+      "properties": {
+        "behavior_verdict_frozen_at": { "type": "string", "format": "date-time" },
+        "ux_verdict_frozen_at": { "type": "string", "format": "date-time" },
+        "diagnosis_started_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "regression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline_round", "previous_passes_rechecked", "regressions"],
+      "properties": {
+        "baseline_round": { "type": "integer", "minimum": 1 },
+        "previous_passes_rechecked": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "regressions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "checks": {
       "type": "array",
       "minItems": 1,

@@ -49,6 +49,7 @@ def run_validate(
     goal_path: Path,
     app_dir: Path,
     root: Path | None = None,
+    require_strict: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     root = root or repo_root()
     cmd = [
@@ -61,6 +62,8 @@ def run_validate(
         "--app-dir",
         str(app_dir),
     ]
+    if require_strict:
+        cmd.append("--require-strict")
     return subprocess.run(cmd, capture_output=True, text=True)
 
 

@@ -27,13 +27,14 @@ So this track measures the **rendered surface**, from outside, after the fact.
 | Basis | numbers from layout and computed style | reasoning about the screenshot |
 | Falsifiable | yes — rerun the probe | no — another reviewer may disagree |
 | Max severity | `blocker` | `major` |
-| Can block the loop | yes, if `ux_policy.gate_on` says so | **never** |
+| Can block the loop | yes, if severity and rule are selected by protected `ux_policy` | **never** |
 | Required fields | `measurement` with actual + threshold | `heuristic`, `rationale`, `confidence` |
 
 **The rule that governs this track: a judged finding can never fail a goal.**
 It is advisory input for the builder and a candidate for promotion into
-`goal.json`. Only measured findings — with a number, a threshold, and a
-reproducible probe run behind them — are allowed to gate.
+`goal.json`. Only measured findings — with a number, a protected threshold, a
+selected `gate_rules` id, and a reproducible probe run behind them — may gate.
+Measurement makes an observation repeatable; it does not make every threshold universal.
 
 That asymmetry is deliberate. Without it, "I don't love the spacing" becomes a
 blocking verdict, and the loop stops being falsifiable.
@@ -76,6 +77,9 @@ carries the constants it was judged against.
   before being reported.
 - **Sprawl rules are signals, not verdicts.** A deliberately maximalist design
   can legitimately exceed them. They are always `minor`.
+- Palette, type-scale, font-family, radius, spacing-grid, near-alignment,
+  default-style, and hover-affordance rules are project-style lint. Keep them
+  advisory unless the protected goal explicitly adopts that design policy.
 - The probe sees one viewport per run. Run it at each width in
   `ux_policy.viewports` and save one artifact per width.
 
@@ -149,6 +153,15 @@ why this track runs second rather than in isolation.
 "ux_policy": {
   "enabled": true,
   "gate_on": ["blocker"],
+  "gate_rules": [
+    "viewport-overflow",
+    "occluded-interactive",
+    "text-clipped",
+    "low-legibility",
+    "target-too-small",
+    "element-overflows-viewport",
+    "image-aspect-distortion"
+  ],
   "viewports": [320, 768, 1280]
 }
 ```
@@ -160,6 +173,8 @@ why this track runs second rather than in isolation.
 - `gate_on: ["blocker", "major"]` — strict mode for design-critical work.
 
 Judged findings are never in `gate_on`, regardless of configuration.
+Measured findings whose rule is absent from `gate_rules` remain advisory even
+when their severity appears in `gate_on`.
 
 ## Promotion
 

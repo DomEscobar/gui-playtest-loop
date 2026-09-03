@@ -1,6 +1,8 @@
 {
+  "contract_version": 2,
   "goal_id": "memory-game-playable",
   "source_prompt": "the memory game should be fully playable",
+  "profile": "standard",
   "app": {
     "start_command": "bun run dev",
     "url": "http://localhost:5173"
@@ -60,6 +62,26 @@
   "ux_policy": {
     "enabled": true,
     "gate_on": ["blocker"],
+    "gate_rules": [
+      "low-legibility",
+      "text-clipped",
+      "element-overflows-viewport",
+      "image-aspect-distortion",
+      "target-too-small",
+      "occluded-interactive",
+      "viewport-overflow"
+    ],
     "viewports": [320, 768, 1280]
+  },
+  "responsive_policy": {
+    "breakpoints": [768],
+    "probe_breakpoint_edges": true
+  },
+  "protection": {
+    "integrity_required": true
+  },
+  "budget": {
+    "max_rounds": 5,
+    "max_minutes": 60
   }
 }

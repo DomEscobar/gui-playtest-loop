@@ -2,6 +2,7 @@
   "goal_id": "memory-clean-control",
   "round": 1,
   "playtester_run_id": "golden-memory-clean-control",
+  "evidence_origin": "synthetic-golden",
   "checks": [
     {
       "id": "initial-state-hidden",

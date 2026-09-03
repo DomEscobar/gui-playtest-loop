@@ -21,7 +21,7 @@ repo_root="$(cd "$script_dir/.." && pwd)"
 
 mkdir -p "$destination"
 
-for item in SKILL.md AGENTS.md reference prompts templates scripts docs LICENSE README.md; do
+for item in SKILL.md AGENTS.md skills reference prompts templates scripts docs LICENSE README.md; do
   cp -R "$repo_root/$item" "$destination/"
 done
 

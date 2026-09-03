@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PlaytestGoal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "goal_id", "source_prompt", "profile", "app", "checks"],
+  "properties": {
+    "contract_version": { "const": 2 },
+    "goal_id": { "type": "string", "minLength": 1 },
+    "source_prompt": { "type": "string", "minLength": 1 },
+    "profile": { "enum": ["quick", "standard", "release"] },
+    "app": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_command", "url"],
+      "properties": {
+        "start_command": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "statement", "required"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "statement": { "type": "string", "minLength": 1 },
+          "required": { "type": "boolean" }
+        }
+      }
+    },
+    "ux_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "gate_on", "viewports"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "gate_on": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["blocker", "major", "minor"] }
+        },
+        "gate_rules": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "viewports": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 200, "maximum": 10000 }
+        }
+      }
+    },
+    "responsive_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["breakpoints", "probe_breakpoint_edges"],
+      "properties": {
+        "breakpoints": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 201, "maximum": 9999 }
+        },
+        "probe_breakpoint_edges": { "type": "boolean" }
+      }
+    },
+    "protection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["integrity_required"],
+      "properties": {
+        "integrity_required": { "type": "boolean" }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_rounds": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "max_minutes": { "type": "integer", "minimum": 1 },
+        "max_spend": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

@@ -46,6 +46,7 @@ def main() -> int:
     aggregate = {
         "timestamp": ts,
         "source": args.source,
+        "evaluation_kind": "harness-baseline" if args.source == "golden" else "live-agent",
         "split": args.split,
         "fixtures": [],
         "totals": {
@@ -65,6 +66,7 @@ def main() -> int:
         fixture_id = entry["id"]
         if args.tier1_only and not entry.get("tier1", True):
             continue
+        aggregate["totals"]["count"] += 1
 
         fixture_dir = root / "benchmark" / "fixtures" / fixture_id
         goal_path = fixture_dir / "goal.json"
@@ -94,8 +96,27 @@ def main() -> int:
             exit_code = 1
             continue
 
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        expected_origin = "synthetic-golden" if args.source == "golden" else "live-agent"
+        if report.get("evidence_origin") != expected_origin:
+            row["score_ok"] = False
+            row["problems"].append(
+                f"{args.source} report must declare evidence_origin={expected_origin!r}, "
+                f"got {report.get('evidence_origin')!r}"
+            )
+            aggregate["fixtures"].append(row)
+            aggregate["totals"]["failed"] += 1
+            exit_code = 1
+            continue
+
         if not args.skip_validate:
-            proc = run_validate(rd, goal_path, fixture_dir, root)
+            proc = run_validate(
+                rd,
+                goal_path,
+                fixture_dir,
+                root,
+                require_strict=args.source == "runs",
+            )
             row["validate_ok"] = proc.returncode == 0
             if proc.returncode != 0:
                 row["problems"].append(proc.stdout.strip() or proc.stderr.strip())
@@ -117,12 +138,11 @@ def main() -> int:
         else:
             row["problems"].append(proc.stderr.strip() or proc.stdout.strip())
 
-        aggregate["totals"]["count"] += 1
+        aggregate["totals"]["detection_recall_sum"] += row["detection_recall"] or 0.0
+        aggregate["totals"]["detection_precision_sum"] += row["detection_precision"] or 0.0
+        aggregate["totals"]["ux_recall_sum"] += row["ux_recall"] or 0.0
         if row["score_ok"]:
             aggregate["totals"]["passed"] += 1
-            aggregate["totals"]["detection_recall_sum"] += row["detection_recall"] or 0.0
-            aggregate["totals"]["detection_precision_sum"] += row["detection_precision"] or 0.0
-            aggregate["totals"]["ux_recall_sum"] += row["ux_recall"] or 0.0
         else:
             aggregate["totals"]["failed"] += 1
             exit_code = 1
@@ -131,7 +151,7 @@ def main() -> int:
         status = "PASS" if row["score_ok"] else "FAIL"
         print(f"{status} {fixture_id}")
 
-    n = aggregate["totals"]["passed"]
+    n = aggregate["totals"]["count"]
     if n:
         aggregate["totals"]["detection_recall_avg"] = (
             aggregate["totals"]["detection_recall_sum"] / n
@@ -161,7 +181,8 @@ def main() -> int:
     )
 
     print(
-        f"\nTier-1: {aggregate['totals']['passed']}/{aggregate['totals']['count']} fixtures passed"
+        f"\n{'Harness baseline' if args.source == 'golden' else 'Live Tier-1'}: "
+        f"{aggregate['totals']['passed']}/{aggregate['totals']['count']} fixtures passed"
     )
     print(
         f"Avg recall={aggregate['totals']['detection_recall_avg']:.2f} "
